@@ -11,27 +11,11 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-	// The server is implemented in node
-	let serverModule = context.asAbsolutePath(
-		path.join('server', 'out', 'server.js')
+	let executablePath = context.asAbsolutePath(
+		path.join('..', '..', '..', 'install', 'sample_server' )
 	);
-	// The debug options for the server
-	// --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-	let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
 
-	// If the extension is launched in debug mode then the debug server options are used
-	// Otherwise the run options are used
-	// let serverOptions: ServerOptions = {
-	// 	run: { module: serverModule, transport: TransportKind.ipc },
-	// 	debug: {
-	// 		module: serverModule,
-	// 		transport: TransportKind.ipc,
-	// 		options: debugOptions
-	// 	}
-	// };
-
-	//const executablePath = '/home/vogtha/lsp/fortran-language-server/fortls.py';
-	const executablePath = '/home/vogtha/workspace-cpp-lsp/sample_lsp_server2/build/Debug/a_json_rpc_server';
+	// const executablePath = '/home/vogtha/workspace-cpp-lsp/sample_lsp_server2/build/Debug/a_json_rpc_server';
 	let serverOptions: ServerOptions = {
 		command: executablePath,
 		args: ["--variable_hover", "--debug_log"]
@@ -44,7 +28,8 @@ export function activate(context: ExtensionContext) {
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-		}
+		},
+		outputChannelName: 'cmakels'
 	};
 
 	// Create the language client and start the client.
