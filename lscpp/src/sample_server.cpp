@@ -2,8 +2,10 @@
 #include <unistd.h>
 #include <fstream>
 #include <future>
+#include <loguru.hpp>
 #include <queue>
 #include <sstream>
+#include <string>
 
 #include "messages.h"
 
@@ -64,21 +66,19 @@ class lsp_server {
       }
     });
 
-    std::ofstream of(
-        "/home/vogtha/workspace-cpp-lsp/sample_lsp_server2/log/log.json");
-    auto process = std::async(std::launch::async, [this, &of]() {
+    auto process = std::async(std::launch::async, [this]() {
       while (true) {
         if (queue_.size() > 0) {
           std::string message = queue_.back();
           queue_.pop();
 
           nlohmann::json m_as_json = nlohmann::json::parse(message);
-          of << m_as_json.dump() << std::endl;
+          LOG_F(INFO, "'%s'", m_as_json.dump().c_str());
           if (m_as_json.contains("id")) {
             message::RequestMessage my_message =
                 m_as_json.get<message::RequestMessage>();
             nlohmann::json and_back = my_message;
-            of << and_back.dump() << std::endl;
+            LOG_F(INFO, "'%s'", and_back.dump().c_str());
 
             // assume that it was "initialize"
             {
@@ -100,7 +100,7 @@ class lsp_server {
             {
               std::string reply_content =
                   "{\"jsonrpc\":\"2.0\",\"method\":\"window/showMessage\""
-                  ",\"params\":{\"type\":1,\"message\":\"Oh no!\"}}";
+                  ",\"params\":{\"type\":1,\"message\":\"Oh no2!\"}}";
               std::stringstream reply;
               reply << "Content-Length: ";
               reply << reply_content.size();
@@ -116,7 +116,8 @@ class lsp_server {
             message::NotificationMessage my_message =
                 m_as_json.get<message::NotificationMessage>();
             nlohmann::json and_back = my_message;
-            of << and_back.dump() << std::endl;
+
+            LOG_F(INFO, "'%s'", and_back.dump().c_str());
           }
         }
       }
@@ -124,14 +125,19 @@ class lsp_server {
 
     rcv.wait();
     process.wait();
-    of.close();
   }
 
  private:
   std::queue<std::string> queue_;  // TODO make it threadsafe
 };
 
-int main() {
+int main(int argc, char* argv[]) {
+  loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
+  loguru::g_colorlogtostderr = false;
+  loguru::init(argc, argv);
+  loguru::add_file("sample_server.log", loguru::Truncate,
+                   loguru::Verbosity_MAX);
+
   lsp_server serv;
   serv.start();
 }
