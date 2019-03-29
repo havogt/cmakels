@@ -1,0 +1,2 @@
+add_executable(test_read_header test_read_header.cpp)
+target_link_libraries(test_read_header gtest_main lscpp)

@@ -13,10 +13,13 @@ add_subdirectory(external/loguru)
 
 find_package(Threads)
 
+add_subdirectory(src)
+
 add_executable(sample_server src/sample_server.cpp)
 target_compile_options(sample_server PRIVATE -Wall)
 target_link_libraries(sample_server PRIVATE Threads::Threads)
 target_link_libraries(sample_server PRIVATE loguru)
+target_link_libraries(sample_server PRIVATE lscpp)
 
 install(TARGETS sample_server DESTINATION bin)
 
@@ -34,5 +37,7 @@ if(BUILD_TESTING)
         FetchContent_Populate(googletest)
         add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 	endif()
+	
+	add_subdirectory(test)
 endif()
 
