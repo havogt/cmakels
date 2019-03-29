@@ -60,4 +60,6 @@ lsp_header parse_header(transporter& t) {
   return {-1};
 }
 
+lsp_header parse_header(transporter&& t) { return parse_header(t); }
+
 }  // namespace lscpp

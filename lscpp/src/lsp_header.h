@@ -10,4 +10,5 @@ struct lsp_header {
 };
 
 lsp_header parse_header(transporter& t);
+lsp_header parse_header(transporter&& t);
 }  // namespace lscpp

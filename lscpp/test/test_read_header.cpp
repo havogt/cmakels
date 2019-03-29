@@ -28,9 +28,8 @@ class fake_transporter : public transporter {
 
 TEST(parse_header, simple) {
   int expected_content_length = 2;
-  fake_transporter t{"Content-Length: 2\r\n\r\n{}"};
 
-  auto result = parse_header(t);
+  auto result = parse_header(fake_transporter{"Content-Length: 2\r\n\r\n{}"});
 
   ASSERT_EQ(expected_content_length, result.content_length);
 }
