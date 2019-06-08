@@ -61,6 +61,7 @@ class lsp_server {
               std::string reply_content =
                   "{\"jsonrpc\":\"2.0\",\"method\":\"window/showMessage\""
                   ",\"params\":{\"type\":1,\"message\":\"Oh no2!\"}}";
+              LOG_F(INFO, "'%s'", make_lsp_message(reply_content).c_str());
               transporter_.write_message(make_lsp_message(reply_content));
             }
           } else {

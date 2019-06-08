@@ -1,0 +1,6 @@
+add_executable(sample_server2 sample_server2.cpp)
+target_compile_options(sample_server2 PRIVATE -Wall)
+target_link_libraries(sample_server2 PRIVATE Threads::Threads)
+target_link_libraries(sample_server2 PRIVATE loguru)
+target_link_libraries(sample_server2 PRIVATE lscpp)
+install(TARGETS sample_server2 DESTINATION bin)

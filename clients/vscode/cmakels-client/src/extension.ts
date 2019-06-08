@@ -12,7 +12,7 @@ let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
 	let executablePath = context.asAbsolutePath(
-		path.join('..', '..', '..', 'install', 'bin', 'sample_server' )
+		path.join('..', '..', '..', 'install', 'bin', 'sample_server2')
 	);
 
 	let serverOptions: ServerOptions = {
@@ -23,7 +23,7 @@ export function activate(context: ExtensionContext) {
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
 		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', language: 'plaintext' }],
+		documentSelector: [{ scheme: 'file', language: 'cmake' }],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			// fileEvents: workspace.createFileSystemWatcher('**/.clientrc')

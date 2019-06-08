@@ -17,13 +17,13 @@ class fake_transporter : public transporter {
     return c;
   }
 
-  std::string read_message(std::size_t len) {
+  std::string read_message(std::size_t len) override {
     std::string res = msg_.substr(pos_, len);
     pos_ += len;
     return res;
   }
 
-  void write_message(std::string) {}
+  void write_message(std::string) override {}
 };
 
 TEST(parse_header, simple) {
