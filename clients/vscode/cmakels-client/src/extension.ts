@@ -8,22 +8,38 @@ import {
 	TransportKind
 } from 'vscode-languageclient';
 
+/**
+ * Method to get workspace configuration option
+ * @param option name of the option (e.g. for clangd.path should be path)
+ * @param defaultValue default value to return if option is not set
+ */
+function getConfig<T>(option: string, defaultValue?: any): T {
+	const config = workspace.getConfiguration('cmakels');
+	return config.get<T>(option, defaultValue);
+}
+
+
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-	let executablePath = context.asAbsolutePath(
-		path.join('..', '..', '..', 'install', 'bin', 'sample_server2')
-	);
+	let executablePath = getConfig<string>('path');
 
 	let serverOptions: ServerOptions = {
 		command: executablePath,
 		// args: ["--variable_hover", "--debug_log"]
 	};
 
+
+
+	const filePattern: string = '**/*.{' +
+		['CMakeLists.txt', 'cmake', 'cmake.in'].join()
+		+ '}';
+
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
 		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', language: 'cmake' }],
+		documentSelector: [{ scheme: 'file', pattern: filePattern }],
+		// documentSelector: [{ scheme: 'file', language: 'cmake' }],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			// fileEvents: workspace.createFileSystemWatcher('**/.clientrc')

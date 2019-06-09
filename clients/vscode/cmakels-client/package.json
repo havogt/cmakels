@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onLanguage:plaintext"
+		"onLanguage:cmake"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -18,6 +18,11 @@
 			"type": "object",
 			"title": "cmakels",
 			"properties": {
+				"cmakels.path": {
+					"type": "string",
+					"default": "cmakels",
+					"description": "The path to the cmakels executable, e.g.: /usr/bin/cmakels"
+				},
 				"cmakels.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
