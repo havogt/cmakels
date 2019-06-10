@@ -15,7 +15,11 @@ std::string make_lsp_message(std::string content) {
   std::stringstream reply;
   reply << "Content-Length: ";
   reply << content.size();
+#ifdef _WIN32
+  reply << "\n\n";
+#else
   reply << "\r\n\r\n";
+#endif
   reply << content;
   return reply.str();
 }

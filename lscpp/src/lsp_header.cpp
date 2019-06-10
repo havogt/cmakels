@@ -33,6 +33,13 @@ lsp_header parse_header(transporter& t) {
   bool valid_header = false;
   for (int i = 0; i < max_length - 2; ++i) {
     size_buffer[pos] = t.read_char();
+    #ifdef _WIN32
+     if (size_buffer[pos] == char_lf){
+      valid_header=true;
+       ++pos;
+      break;
+     }
+    #else
     if (cr_reached) {
       if (size_buffer[pos] == char_lf) {
         valid_header = true;
@@ -40,12 +47,24 @@ lsp_header parse_header(transporter& t) {
       break;
     }
     if (size_buffer[pos] == char_cr) cr_reached = true;
+    #endif
     ++pos;
+    LOG_F(INFO, "Size buffer: %c", size_buffer[pos-1]);
   }
   if (valid_header) {
+    LOG_F(INFO, "valid_header");
     size_buffer[pos - 1] = '\0';
 
     char last_crlf[2];
+    #ifdef _WIN32
+    last_crlf[0] = t.read_char();
+    if (last_crlf[0] == char_lf) {
+      LOG_F(INFO, "Returning Content-Length: %s", size_buffer);
+      return {atoi(size_buffer)};
+    } else {
+      valid_header = false;
+    }
+    #else
     last_crlf[0] = t.read_char();
     last_crlf[1] = t.read_char();
 
@@ -55,6 +74,7 @@ lsp_header parse_header(transporter& t) {
     } else {
       valid_header = false;
     }
+    #endif
   }
   LOG_F(ERROR, "Failed parsing header!");
   return {-1};

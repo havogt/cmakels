@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
   loguru::g_colorlogtostderr = false;
   loguru::init(argc, argv);
-  loguru::add_file("/home/vogtha/tmp/sample_server.log", loguru::Truncate,
+  loguru::add_file("sample_server.log", loguru::Truncate,
                    loguru::Verbosity_MAX);
 
   lscpp::lsp_launcher launcher{std::make_unique<lscpp::my_lsp_server>()};

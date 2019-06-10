@@ -31,15 +31,15 @@ export function activate(context: ExtensionContext) {
 
 
 
-	const filePattern: string = '**/*.{' +
-		['CMakeLists.txt', 'cmake', 'cmake.in'].join()
-		+ '}';
+	// const filePattern: string = '**/*.{' +
+	// 	['CMakeLists.txt', 'cmake', 'cmake.in'].join()
+	// 	+ '}';
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
 		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', pattern: filePattern }],
-		// documentSelector: [{ scheme: 'file', language: 'cmake' }],
+		// documentSelector: [{ scheme: 'file', pattern: filePattern }],
+		documentSelector: [{ scheme: 'file', language: 'cmake' }],
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			// fileEvents: workspace.createFileSystemWatcher('**/.clientrc')

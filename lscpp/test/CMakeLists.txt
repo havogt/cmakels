@@ -7,8 +7,8 @@ target_link_libraries(test_message_handling_v1 gtest_main)
 add_executable(test_message_handling_v2 test_message_handling_v2.cpp)
 target_link_libraries(test_message_handling_v2 gtest_main)
 
-add_executable(test_lsp_implementation test_lsp_implementation.cpp)
-target_link_libraries(test_lsp_implementation gtest_main)
+#add_executable(test_lsp_implementation test_lsp_implementation.cpp)
+#target_link_libraries(test_lsp_implementation gtest_main)
 
 add_executable(test_json_serializable test_json_serializable.cpp)
 target_link_libraries(test_json_serializable gtest_main)
