@@ -3,10 +3,21 @@
 #include "../../external/json.hpp"
 #include <loguru.hpp>
 
+#include "../protocol/CompletionItem.h"
 #include "../protocol/Hover.h"
 #include "../protocol/InitializeParams.h"
 #include "../protocol/InitializeResult.h"
 #include "../protocol/Range.h"
+
+// serialization for std::variant
+namespace nlohmann {
+template <typename... Args> struct adl_serializer<std::variant<Args...>> {
+  static void to_json(json &j, std::variant<Args...> const &v) {
+    std::visit([&](auto &&value) { j = std::forward<decltype(value)>(value); },
+               v);
+  }
+};
+} // namespace nlohmann
 
 namespace lscpp {
 namespace protocol {
@@ -29,6 +40,27 @@ void from_json(const nlohmann::json &j, protocol::ClientCapabilities &p) {
   }
 }
 
+void from_json(const nlohmann::json &j, protocol::Position &p) {
+  j.at("line").get_to(p.line);
+  j.at("character").get_to(p.character);
+}
+
+void from_json(const nlohmann::json &j, protocol::TextDocumentIdentifier &p) {
+  j.at("uri").get_to(p.uri);
+}
+
+void from_json(const nlohmann::json &j,
+               protocol::TextDocumentPositionParams &p) {
+  j.at("textDocument").get_to(p.textDocument);
+  j.at("position").get_to(p.position);
+}
+
+void from_json(const nlohmann::json &j, protocol::CompletionParams &p) {
+  from_json(j, static_cast<TextDocumentPositionParams &>(p));
+  // j.at("textDocument").get_to(p.textDocument);
+  // j.at("position").get_to(p.position);
+}
+
 void from_json(const nlohmann::json &j, protocol::InitializeParams &p) {
   //   from_json(j, static_cast<Message&>(m));
   if (j.at("processId") != "null") {
@@ -46,27 +78,71 @@ void from_json(const nlohmann::json &j, protocol::InitializeParams &p) {
   j.at("capabilities").get_to(p.capabilities);
 }
 
+void to_json(nlohmann::json &j, const CompletionOptions &m) {
+  j = nlohmann::json{};
+  j.emplace("resolveProvider", m.resolveProvider);
+  j.emplace("triggerCharacters", m.triggerCharacters);
+}
+
+void to_json(nlohmann::json &j, const TextDocumentSyncOptions &m) {
+  j = nlohmann::json{};
+  j.emplace("openClose", m.openClose);
+  j.emplace("change", m.change);
+  j.emplace("willSave", m.willSave);
+  j.emplace("willSaveWaitUntil", m.willSaveWaitUntil);
+  // j.emplace("save", m.save); // TODO
+}
+
 void to_json(nlohmann::json &j, const ServerCapabilities &m) {
   j = nlohmann::json{};
   j.emplace("hoverProvider", m.hoverProvider);
-  // j.emplace("definitionProvider", m.getDefinitionProvider());
+  if (m.completionProvider) {
+    j.emplace("completionProvider", m.completionProvider.value());
+  }
+  if (m.textDocumentSync) {
+    j.emplace("textDocumentSync", m.textDocumentSync.value());
+  }
 }
+
+// void to_json(nlohmann::json &j,
+//              const std::variant<std::vector<CompletionItem>> &m)
+// {
+//   LOG_F(INFO, "Converting
+//   std::variant<std::vector<protocol::CompletionItem>>"); if
+//   (std::holds_alternative<std::vector<CompletionItem>>(m))
+//   {
+//     LOG_F(INFO, "holding alternative std::vector<CompletionItem>");
+//     auto const &v = std::get<std::vector<CompletionItem>>(m);
+//     // j = v;
+//     LOG_F(INFO, "calling to_json");
+//     nlohmann::to_json(j, v);
+//     // j = std::get<std::vector<CompletionItem>>(m);
+//     LOG_F(INFO, "Converted std::vector<CompletionItem>");
+//   }
+//   else
+//   {
+//     LOG_F(INFO, "Don't know what I hold!");
+//   }
+
+//   // j = nlohmann::json{};
+//   // j.emplace("label", m.label);
+// }
+
+void to_json(nlohmann::json &j, const CompletionItem &m) {
+  j = nlohmann::json{};
+  LOG_F(INFO, "Serializing CompletionItem");
+  j.emplace("label", m.label);
+}
+
+// void to_json(nlohmann::json &j, const std::vector<CompletionItem> &m) {
+//   LOG_F(INFO, "Serializing a vector");
+//   j = m;
+// }
 
 void to_json(nlohmann::json &j, const InitializeResult &m) {
   j = nlohmann::json{};
   j.emplace("capabilities", m.capabilities);
-  //   j.emplace("hoverProvider", m.getHoverProvider());
-  // nlohmann::json j{"capabilities", capabilities_};
 }
-
-std::string contents; // TODO
-//   contents : MarkedString | MarkedString[] | MarkupContent;
-
-/**
- * An optional range is a range inside a text document
- * that is used to visualize a hover, e.g. by changing the background color.
- */
-std::optional<Range> range;
 
 void to_json(nlohmann::json &j, const Hover &m) {
   j = nlohmann::json{};

@@ -23,6 +23,7 @@ public:
   template <typename Result>
   nlohmann::json make_response_message(int id, Result const &result) {
     // nlohmann::json j_result = result;
+
     nlohmann::json j{{"jsonrpc", "2.0"}, {"id", id}, {"result", result}};
     return j;
   }
@@ -67,12 +68,19 @@ public:
       }
     } else {
       if (j["method"] == "textDocument/hover") {
-        protocol::TextDocumentPositionParams params{};
+        LOG_F(INFO, "Received textDocument/hover");
+        protocol::TextDocumentPositionParams params;
+        j.at("params").get_to(params);
         auto result = server_.getTextDocumentService().hover(params);
         auto json_result = make_response_message(j["id"], result);
         return json_result.dump();
-        // return make_response_message(j["id"], const Result &result)
-        // return make_notification_message("some request").dump();
+      } else if (j["method"] == "textDocument/completion") {
+        LOG_F(INFO, "Received textDocument/completion");
+        protocol::CompletionParams params{};
+        j.at("params").get_to(params);
+        auto result = server_.getTextDocumentService().completion(params);
+        auto json_result = make_response_message(j["id"], result);
+        return json_result.dump();
       }
     }
     return {};
