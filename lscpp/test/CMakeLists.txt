@@ -15,3 +15,6 @@ target_link_libraries(test_json_serializable gtest_main)
 
 add_executable(test_std_variant_visitor test_std_variant_visitor.cpp)
 target_link_libraries(test_std_variant_visitor gtest_main)
+
+add_executable(test_text_document test_text_document.cpp)
+target_link_libraries(test_text_document gtest_main)
