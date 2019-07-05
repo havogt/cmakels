@@ -1,13 +1,18 @@
+#include "protocol/TextDocumentIdentifier.h"
 #pragma once
 
 #include "../../external/json.hpp"
 #include <loguru.hpp>
 
 #include "../protocol/CompletionItem.h"
+#include "../protocol/DidChangeTextDocumentParams.h"
+#include "../protocol/DidCloseTextDocumentParams.h"
+#include "../protocol/DidOpenTextDocumentParams.h"
 #include "../protocol/Hover.h"
 #include "../protocol/InitializeParams.h"
 #include "../protocol/InitializeResult.h"
 #include "../protocol/Range.h"
+#include "../protocol/TextDocumentItem.h"
 
 // serialization for std::variant
 namespace nlohmann {
@@ -37,7 +42,35 @@ void from_json(const nlohmann::json &j, protocol::ClientCapabilities &p) {
   if (j.find("textDocument") != j.end()) {
     protocol::TextDocumentClientCapabilities textDocument;
     j["textDocument"].get_to(textDocument);
+    p.textDocument = textDocument;
   }
+}
+
+void from_json(const nlohmann::json &j, protocol::TextDocumentItem &p) {
+  j.at("uri").get_to(p.uri);
+  j.at("languageId").get_to(p.languageId);
+  j.at("version").get_to(p.version);
+  j.at("text").get_to(p.text);
+}
+
+void from_json(const nlohmann::json &j,
+               protocol::DidOpenTextDocumentParams &p) {
+  j.at("textDocument").get_to(p.textDocument);
+}
+
+void from_json(const nlohmann::json &j, protocol::TextDocumentIdentifier &p) {
+  j.at("uri").get_to(p.uri);
+}
+
+void from_json(const nlohmann::json &j,
+               protocol::DidCloseTextDocumentParams &p) {
+  j.at("textDocument").get_to(p.textDocument);
+}
+
+void from_json(const nlohmann::json &j,
+               protocol::VersionedTextDocumentIdentifier &p) {
+  from_json(j, static_cast<TextDocumentIdentifier &>(p));
+  j.at("version").get_to(p.version);
 }
 
 void from_json(const nlohmann::json &j, protocol::Position &p) {
@@ -45,10 +78,31 @@ void from_json(const nlohmann::json &j, protocol::Position &p) {
   j.at("character").get_to(p.character);
 }
 
-void from_json(const nlohmann::json &j, protocol::TextDocumentIdentifier &p) {
-  j.at("uri").get_to(p.uri);
+void from_json(const nlohmann::json &j, protocol::Range &p) {
+  j.at("start").get_to(p.start);
+  j.at("end").get_to(p.end);
 }
 
+void from_json(const nlohmann::json &j,
+               protocol::TextDocumentContentChangeEvent &p) {
+  if (j.find("range") != j.end()) {
+    protocol::Range range;
+    j["range"].get_to(range);
+    p.range = range;
+  }
+  if (j.find("rangeLength") != j.end()) {
+    int rangeLength;
+    j["rangeLength"].get_to(rangeLength);
+    p.rangeLength = rangeLength;
+  }
+  j.at("text").get_to(p.text);
+}
+
+void from_json(const nlohmann::json &j,
+               protocol::DidChangeTextDocumentParams &p) {
+  j.at("textDocument").get_to(p.textDocument);
+  j.at("contentChanges").get_to(p.contentChanges);
+}
 void from_json(const nlohmann::json &j,
                protocol::TextDocumentPositionParams &p) {
   j.at("textDocument").get_to(p.textDocument);

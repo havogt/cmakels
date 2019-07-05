@@ -42,9 +42,11 @@ public:
         auto msg = transporter_->read_message(header.content_length);
         LOG_F(INFO, "msg: '%s'", msg.c_str());
 
-        std::string result = msg_handler_.handle_request(msg);
-        LOG_F(INFO, "Sending response: '%s'", result.c_str());
-        transporter_->write_message(make_lsp_message(result));
+        auto result = msg_handler_.handle_message(msg);
+        if (result) {
+          LOG_F(INFO, "Sending response: '%s'", (*result).c_str());
+          transporter_->write_message(make_lsp_message(*result));
+        }
       }
     });
 

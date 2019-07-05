@@ -2,6 +2,9 @@
 
 #include "protocol/CompletionItem.h"
 #include "protocol/CompletionParams.h"
+#include "protocol/DidChangeTextDocumentParams.h"
+#include "protocol/DidCloseTextDocumentParams.h"
+#include "protocol/DidOpenTextDocumentParams.h"
 #include "protocol/Hover.h"
 #include "protocol/InitializeParams.h"
 #include "protocol/InitializeResult.h"
@@ -18,6 +21,10 @@ public:
   virtual std::variant<
       std::vector<protocol::CompletionItem> /* , CompletionList */> // TODO
   completion(protocol::CompletionParams params) = 0;
+
+  virtual void didOpen(protocol::DidOpenTextDocumentParams params) = 0;
+  virtual void didChange(protocol::DidChangeTextDocumentParams params) = 0;
+  virtual void didClose(protocol::DidCloseTextDocumentParams params) = 0;
 };
 
 class lsp_server {
