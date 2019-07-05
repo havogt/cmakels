@@ -38,7 +38,7 @@ public:
     return j;
   }
 
-  std::string handle_request(std::string const &request) {
+  std::optional<std::string> handle_message(std::string const &request) {
     nlohmann::json j = nlohmann::json::parse(request);
 
     if (!initialized_) {
@@ -81,10 +81,31 @@ public:
         auto result = server_.getTextDocumentService().completion(params);
         auto json_result = make_response_message(j["id"], result);
         return json_result.dump();
+      } else if (j["method"] == "textDocument/didOpen") {
+        LOG_F(INFO, "Received textDocument/didOpen");
+        protocol::DidOpenTextDocumentParams params{};
+        j.at("params").get_to(params);
+        server_.getTextDocumentService().didOpen(params);
+      } else if (j["method"] == "textDocument/didChange") {
+        LOG_F(INFO, "Received textDocument/didChange");
+        protocol::DidChangeTextDocumentParams params{};
+        j.at("params").get_to(params);
+        server_.getTextDocumentService().didChange(params);
+      } else if (j["method"] == "textDocument/didClose") {
+        LOG_F(INFO, "Received textDocument/didClose");
+        protocol::DidCloseTextDocumentParams params{};
+        j.at("params").get_to(params);
+        server_.getTextDocumentService().didClose(params);
+      } else if (j["method"] == "textDocument/didSave") {
+        LOG_F(INFO, "Received textDocument/didSave");
+        return make_notification_message("Ignored textDocument/didSave.")
+            .dump();
+      } else if (j["method"] == "textDocument/willSave") {
+        LOG_F(INFO, "Received textDocument/willSave");
       }
     }
-    return {};
+    return std::nullopt;
   }
-};
+}; // namespace lscpp
 
 } // namespace lscpp

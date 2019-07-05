@@ -43,6 +43,18 @@ public:
     return std::vector<protocol::CompletionItem>{
         {"bla" + params.textDocument.uri}};
   }
+
+  void didOpen(protocol::DidOpenTextDocumentParams params) override {
+    LOG_F(INFO, "Opening: %s", params.textDocument.uri.c_str());
+  }
+
+  void didChange(protocol::DidChangeTextDocumentParams params) override {
+    LOG_F(INFO, "Changing: %s", params.textDocument.uri.c_str());
+  }
+
+  void didClose(protocol::DidCloseTextDocumentParams params) override {
+    LOG_F(INFO, "Closing: %s", params.textDocument.uri.c_str());
+  }
 };
 
 } // namespace lscpp

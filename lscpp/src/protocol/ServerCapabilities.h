@@ -45,12 +45,12 @@ struct TextDocumentSyncOptions {
    * If present will save notifications are sent to the server. If omitted the
    * notification should not be sent.
    */
-  bool willSave;
+  bool willSave = false;
   /**
    * If present will save wait until requests are sent to the server. If omitted
    * the request should not be sent.
    */
-  bool willSaveWaitUntil;
+  bool willSaveWaitUntil = false;
   /**
    * If present save notifications are sent to the server. If omitted the
    * notification should not be sent.
