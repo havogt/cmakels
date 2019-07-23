@@ -56,11 +56,9 @@ std::size_t get_column_end(cmListFileArgument const &arg) { return arg.ColEnd; }
 std::size_t get_line(cmListFileFunction const &f) {
   return f.Line - 1; // convert 1-based (CMake) to 0-based (lsp)
 }
-std::size_t get_column(cmListFileFunction const &f) {
-  return f.Col - f.Name.Lower.length();
-}
+std::size_t get_column(cmListFileFunction const &f) { return f.Col - 1; }
 std::size_t get_column_functionname_end(cmListFileFunction const &f) {
-  return f.Col;
+  return f.Col + f.Name.Lower.length() - 1;
 }
 std::size_t get_line_end(cmListFileFunction const &f) {
   return f.EndLine - 1; // convert 1-based (CMake) to 0-based (lsp)
