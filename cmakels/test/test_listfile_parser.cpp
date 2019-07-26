@@ -1,73 +1,11 @@
-#include <cmListFileCache.h>
-#include <cmMessenger.h>
-#include <fstream>
 #include <gtest/gtest.h>
+
+#include <listfile_parser.hpp>
 #include <map>
-#include <memory>
-#include <optional>
 #include <string>
 
 namespace cmake_query {
-// TODO we need support for parsing incomplete files up to a position
-std::optional<cmListFile> parse_cmListFile(std::string const &buffer) {
-  std::string tmp_file = "/tmp/buff.cmake"; // TODO write to a better location!
-  {
-    std::ofstream out(tmp_file.c_str()); // TODO use the in-memory lexer instead
-                                         // (probably a bit of work)
-    out << buffer;
-  }
-
-  cmListFile lf;
-  {
-    auto messenger = std::make_unique<cmMessenger>();
-    // auto state = std::make_unique<cmState>();
-    // cmStateSnapshot snapshot(state.get());
-    cmListFileBacktrace lfbt{/* snapshot */};
-
-    if (lf.ParseFile(tmp_file.c_str(), messenger.get(), lfbt))
-      return lf;
-  }
-  return std::nullopt;
-}
-
-std::optional<std::string> get_function_name(cmListFile const &lf, int line,
-                                             int col) {
-  int line_1based = line + 1;
-
-  for (cmListFileFunction const &f : lf.Functions) {
-    if (f.Line == line_1based && col >= f.Col - f.Name.Lower.length() &&
-        col < f.EndCol) {
-      return f.Name.Lower;
-    }
-  }
-
-  return std::nullopt;
-}
-
-std::size_t get_line(cmListFileArgument const &arg) {
-  return arg.Line - 1; // convert 1-based (CMake) to 0-based (lsp)
-}
-std::size_t get_column(cmListFileArgument const &arg) { return arg.Col; }
-std::size_t get_line_end(cmListFileArgument const &arg) {
-  return arg.LineEnd - 1;
-}
-std::size_t get_column_end(cmListFileArgument const &arg) { return arg.ColEnd; }
-
-std::size_t get_line(cmListFileFunction const &f) {
-  return f.Line - 1; // convert 1-based (CMake) to 0-based (lsp)
-}
-std::size_t get_column(cmListFileFunction const &f) { return f.Col - 1; }
-std::size_t get_column_functionname_end(cmListFileFunction const &f) {
-  return f.Col + f.Name.Lower.length() - 1;
-}
-std::size_t get_line_end(cmListFileFunction const &f) {
-  return f.EndLine - 1; // convert 1-based (CMake) to 0-based (lsp)
-}
-std::size_t get_column_end(cmListFileFunction const &f) { return f.EndCol; }
-std::string get_name(cmListFileFunction const &f) { return f.Name.Original; }
-
 namespace {
-
 namespace test_helper {
 
 struct range_t {
@@ -105,11 +43,12 @@ struct listfile_test {
   bool valid;
   std::map<std::size_t, function> functions;
 
-  void verify(std::optional<cmListFile> const &parsed_file) {
+  void verify(std::optional<listfile_t> const &parsed_file) {
     ASSERT_EQ(valid, parsed_file.has_value());
 
     for (auto const &[id, f] : functions) {
-      auto parsed_function = parsed_file->Functions[id];
+      auto parsed_function =
+          parsed_file->Functions[id]; // TODO don't access cmListFile internals!
       ASSERT_EQ(f.name, get_name(parsed_function));
       ASSERT_EQ(f.range.line_start, get_line(parsed_function));
       ASSERT_EQ(f.range.col_start, get_column(parsed_function));
@@ -119,9 +58,10 @@ struct listfile_test {
       ASSERT_EQ(f.range.col_end, get_column_end(parsed_function));
 
       for (auto const &[arg_id, arg] : f.arguments) {
-        auto parsed_arg = parsed_function.Arguments[arg_id];
-        ASSERT_EQ(arg.name, parsed_arg.Value);
-
+        auto parsed_arg =
+            parsed_function
+                .Arguments[arg_id]; // TODO don't access cmListFile internals!$
+        ASSERT_EQ(arg.name, get_name(parsed_arg));
         ASSERT_EQ(arg.range.line_start, get_line(parsed_arg));
         ASSERT_EQ(arg.range.col_start, get_column(parsed_arg));
         ASSERT_EQ(arg.range.line_end, get_line_end(parsed_arg));
@@ -131,7 +71,7 @@ struct listfile_test {
   }
 
   ~listfile_test() {
-    auto result = parse_cmListFile(raw_string);
+    auto result = parse_listfile(raw_string);
     verify(result);
   }
 
@@ -187,5 +127,4 @@ TEST(parse_cmListFile, multiline_with_args_and_spaces) {
   lf.functions[0].add_argument(2, "some_lib", {1, 13, 1, 21});
 }
 } // namespace
-
 } // namespace cmake_query

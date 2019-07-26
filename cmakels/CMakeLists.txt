@@ -4,7 +4,7 @@ project(cmakels LANGUAGES C CXX)
 
 add_subdirectory(../lscpp ${CMAKE_CURRENT_BINARY_DIR}/lscpp)
 add_subdirectory(external/cmake)
-# add_subdirectory(src)
+add_subdirectory(src)
 
 if(BUILD_TESTING)
     enable_testing()
