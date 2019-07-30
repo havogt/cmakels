@@ -17,10 +17,6 @@ bool is_in_function(listfile_function_t const &f, textdocument_position pos) {
 }
 } // namespace
 
-// From LSP spec:
-// Character offset on a line in a document (zero-based). Assuming that the line
-// is represented as a string, the `character` value represents the gap between
-// the`character` and `character + 1`.
 get_function_result_t get_function(listfile_t const &lf,
                                    textdocument_position pos) {
   for (auto const &f : get_functions(lf)) {
