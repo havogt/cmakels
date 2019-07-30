@@ -42,15 +42,12 @@ parse_listfile(std::string const
 //   return std::nullopt;
 // }
 
-std::size_t get_line(cmListFileArgument const &arg) {
-  return arg.Line - 1; // convert 1-based (CMake) to 0-based (lsp)
+listfile_functions_t get_functions(listfile_t const &lf) {
+  return lf.Functions;
 }
-std::size_t get_column(cmListFileArgument const &arg) { return arg.Col; }
-std::size_t get_line_end(cmListFileArgument const &arg) {
-  return arg.LineEnd - 1;
+listfile_arguments_t get_arguments(listfile_function_t const &f) {
+  return f.Arguments;
 }
-std::size_t get_column_end(cmListFileArgument const &arg) { return arg.ColEnd; }
-std::string get_name(cmListFileArgument const &arg) { return arg.Value; }
 
 std::size_t get_line(cmListFileFunction const &f) {
   return f.Line - 1; // convert 1-based (CMake) to 0-based (lsp)
@@ -64,4 +61,15 @@ std::size_t get_line_end(cmListFileFunction const &f) {
 }
 std::size_t get_column_end(cmListFileFunction const &f) { return f.EndCol; }
 std::string get_name(cmListFileFunction const &f) { return f.Name.Original; }
+
+std::size_t get_line(cmListFileArgument const &arg) {
+  return arg.Line - 1; // convert 1-based (CMake) to 0-based (lsp)
+}
+std::size_t get_column(cmListFileArgument const &arg) { return arg.Col; }
+std::size_t get_line_end(cmListFileArgument const &arg) {
+  return arg.LineEnd - 1;
+}
+std::size_t get_column_end(cmListFileArgument const &arg) { return arg.ColEnd; }
+std::string get_name(cmListFileArgument const &arg) { return arg.Value; }
+
 } // namespace cmake_query

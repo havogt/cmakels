@@ -9,7 +9,6 @@ target_include_directories(cmake_query
             "${CMake_SOURCE_DIR}/Utilities"
     )
 target_include_directories(cmake_query PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-target_include_directories(cmake_query PUBLIC /home/blabla)
 target_link_libraries(cmake_query PRIVATE CMakeLib)
 target_compile_features(cmake_query PUBLIC cxx_std_17) # PUBLIC: header contains optional... should be ensured by subprojects???
 

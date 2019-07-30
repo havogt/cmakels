@@ -126,5 +126,8 @@ TEST(parse_cmListFile, multiline_with_args_and_spaces) {
   lf.functions[0].add_argument(1, "PRIVATE", {1, 4, 1, 11});
   lf.functions[0].add_argument(2, "some_lib", {1, 13, 1, 21});
 }
+
+// TODO add tests for multi-line quoted arguments
+
 } // namespace
 } // namespace cmake_query
