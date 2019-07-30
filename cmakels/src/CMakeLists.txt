@@ -1,4 +1,7 @@
-add_library(cmake_query listfile_parser.cpp)
+add_library(cmake_query
+    listfile_parser.cpp
+    listfile_query.cpp
+    )
 
 target_include_directories(cmake_query
     PUBLIC "${CMake_BINARY_DIR}/Source" # needs to be private for encapsulation!

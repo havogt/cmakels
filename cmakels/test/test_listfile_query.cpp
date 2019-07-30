@@ -1,74 +1,8 @@
 #include <gtest/gtest.h>
 #include <listfile_parser.hpp>
-#include <stdexcept>
-#include <string>
+#include <listfile_query.hpp>
 
 namespace cmake_query {
-
-struct textdocument_position {
-  std::size_t line;
-  std::size_t character;
-};
-
-struct get_function_result_t {
-  // TODO extend for incomplete functions
-
-  static constexpr int delimiter_selected = -1;
-  static constexpr int function_name_selected = 0;
-  // n >= 1: n-th argument selected
-
-  listfile_function_t function;
-  int id;
-
-  // Maybe save the token string. There would some redundancy between
-  // (id,function) and the token, the only information which we would gain is
-  // the current selected delimiter, e.g. spaces or parenthesis.
-  // std::string token;
-};
-
-namespace {
-bool is_in_function(listfile_function_t const &f, textdocument_position pos) {
-  return pos.line >= get_line(f) && pos.character >= get_column(f) &&
-         pos.line <= get_line_end(f) && pos.character < get_column_end(f);
-}
-} // namespace
-
-// From LSP spec:
-// Character offset on a line in a document (zero-based). Assuming that the line
-// is represented as a string, the `character` value represents the gap between
-// the`character` and `character + 1`.
-get_function_result_t get_function(listfile_t const &lf,
-                                   textdocument_position pos) {
-  for (auto const &f : get_functions(lf)) {
-    if (is_in_function(f, pos)) {
-      if (pos.line == get_line(f) &&
-          pos.character < get_column_functionname_end(f)) {
-        return {f, get_function_result_t::function_name_selected};
-      }
-      int id = 0;
-      for (auto const &arg : get_arguments(f)) {
-        id++;
-        if (pos.line == get_line(arg) && pos.character >= get_column(arg) &&
-            pos.character < get_column_end(arg)) {
-          return {f, id};
-        }
-      }
-      return {f, get_function_result_t::delimiter_selected};
-    }
-  }
-  throw std::runtime_error("TODO replace me by a useful exception");
-}
-
-std::string get_selected_token(get_function_result_t const &result) {
-  if (result.id == get_function_result_t::function_name_selected) {
-    return get_name(result.function);
-  } else if (result.id == get_function_result_t::delimiter_selected) {
-    return "";
-  } else {
-    return get_name(get_arguments(result.function)[result.id - 1]);
-  }
-}
-
 namespace {
 
 TEST(listfile_query, get_function_name_from_first_char) {
@@ -137,6 +71,17 @@ TEST(listfile_query, get_function_arg_between_args) {
   auto result = get_function(*lf, {0, 15});
   ASSERT_EQ("my_command", get_name(result.function));
   ASSERT_EQ(get_function_result_t::delimiter_selected, result.id);
+}
+
+TEST(listfile_query, multiline_with_args_and_spaces) {
+  auto lf = parse_listfile(R"?(target_link_libraries( a_target
+PRIVATE  some_lib))?");
+
+  ASSERT_EQ("target_link_libraries",
+            get_selected_token(get_function(*lf, {0, 2})));
+  ASSERT_EQ("a_target", get_selected_token(get_function(*lf, {0, 25})));
+  ASSERT_EQ("PRIVATE", get_selected_token(get_function(*lf, {1, 0})));
+  ASSERT_EQ("some_lib", get_selected_token(get_function(*lf, {1, 10})));
 }
 
 // TODO maybe test for "a𐐀b" (where 𐐀 is represented by two code units in

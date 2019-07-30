@@ -1,9 +1,11 @@
-#include "cmake_query.h"
+#include "listfile_parser.hpp"
+#include "listfile_query.hpp"
 #include <cmListFileCache.h> //TODO remove dependency
 
 #include <lsp_launcher.h>
 #include <lsp_server.h>
 #include <map>
+#include <stdexcept>
 
 using namespace lscpp; // TODO remove
 
@@ -31,13 +33,15 @@ public:
   hover(protocol::TextDocumentPositionParams position) override {
     if (!open_files[position.textDocument.uri])
       return {"Parsing Error"};
-    auto result = cmake_query::get_function_name(
-        *(open_files[position.textDocument.uri]), position.position.line,
-        position.position.character);
-    if (result)
-      return {*result};
-    else
+    try {
+      auto result = cmake_query::get_function(
+          *(open_files[position.textDocument.uri]),
+          {static_cast<std::size_t>(position.position.line),
+           static_cast<std::size_t>(position.position.character)});
+      return {cmake_query::get_selected_token(result)};
+    } catch (std::runtime_error e) {
       return {"No result"};
+    }
   }
 
   std::variant<std::vector<protocol::CompletionItem>>
@@ -48,12 +52,13 @@ public:
   }
 
   void didOpen(protocol::DidOpenTextDocumentParams params) override {
-    open_files.emplace(std::make_pair(
-        params.textDocument.uri, cmake_query::parse(params.textDocument.text)));
+    open_files.emplace(
+        std::make_pair(params.textDocument.uri,
+                       cmake_query::parse_listfile(params.textDocument.text)));
   }
   void didChange(protocol::DidChangeTextDocumentParams params) override {
-    open_files[params.textDocument.uri] =
-        cmake_query::parse(params.contentChanges[0].text); // using full sync
+    open_files[params.textDocument.uri] = cmake_query::parse_listfile(
+        params.contentChanges[0].text); // using full sync
     // TODO don't parse everytime: probably save the string and keep a cache and
     // keep a cache for parsed file
   }
