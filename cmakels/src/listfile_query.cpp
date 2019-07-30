@@ -15,11 +15,6 @@ bool is_in_function(listfile_function_t const &f, textdocument_position pos) {
   }
   return false;
 }
-
-//   return (pos.line > get_line(f) && pos.line < get_line(f)) ||
-//   (pos.line==get_line(f) && pos.character>= get_column(f)) || (); return
-//   pos.line >= get_line(f) && pos.character >= get_column(f) &&
-//          pos.line <= get_line_end(f) && pos.character < get_column_end(f);
 } // namespace
 
 // From LSP spec:
