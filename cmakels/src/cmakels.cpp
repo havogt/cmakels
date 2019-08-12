@@ -12,7 +12,7 @@
 
 using namespace lscpp; // TODO remove
 
-std::string substitute_variables(std::string const &token,
+std::string substitute_variables(std::string const &token, std::string uri,
                                  cmake_query::cmake_query &query) {
   std::regex var_regex("(\\$\\{(.*?)\\})", std::regex_constants::ECMAScript);
   if (std::regex_search(token, var_regex)) {
@@ -28,7 +28,7 @@ std::string substitute_variables(std::string const &token,
       std::string match_str = match.str(variable_name_id);
       std::size_t start = result.find(match.str(variable_id));
       result.replace(start, match.length(variable_id),
-                     query.evaluate_variable(match_str));
+                     query.evaluate_variable(match_str, uri));
     }
     return result;
   } else {
@@ -75,8 +75,11 @@ public:
           *(open_files[position.textDocument.uri]),
           {static_cast<std::size_t>(position.position.line),
            static_cast<std::size_t>(position.position.character)});
-      auto ret =
-          substitute_variables(cmake_query::get_selected_token(result), query_);
+      auto ret = substitute_variables(cmake_query::get_selected_token(result),
+                                      position.textDocument.uri, query_);
+      if (query_.is_target(ret, position.textDocument.uri)) {
+        ret += " is a target";
+      }
       return {ret};
     } catch (std::runtime_error e) {
       return {"No result: " + std::string{e.what()}};

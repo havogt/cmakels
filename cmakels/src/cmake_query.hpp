@@ -57,11 +57,29 @@ public:
     my_cmake.Run(std::vector<std::string>{}, false, true);
   }
 
-  std::string evaluate_variable(std::string name) {
+  cmMakefile *get_makefile(std::string const &uri) {
     auto mfs = my_cmake.GetGlobalGenerator()->GetMakefiles();
-    cmMakefile *mf = mfs[0];
-    auto var = mf->GetDefinition(name);
-    return var ? var : "variable not found!";
+    for (auto mf : mfs) {
+      if (("file://" + mf->GetListFiles()[0]).compare(uri) == 0) {
+        return mf;
+      }
+    }
+    return nullptr;
+  }
+
+  bool is_target(std::string const &target, std::string const &uri) {
+    auto mf = get_makefile(uri);
+    return mf && mf->FindTargetToUse(target);
+  }
+
+  std::string evaluate_variable(std::string const &name,
+                                std::string const &uri) {
+    auto mf = get_makefile(uri);
+    if (mf) {
+      auto var = mf->GetDefinition(name);
+      return var ? var : "tried file" + mf->GetListFiles()[0];
+    }
+    return "variable not found!";
   }
 };
 } // namespace cmake_query

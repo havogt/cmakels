@@ -35,7 +35,7 @@ public:
         "/home/vogtha/lsp/experiments/cmakels/cmakels/test/"
         "playground/cmake_example/build");
 
-    my_cmake.Run(std::vector<std::string>{}, false);
+    my_cmake.Run(std::vector<std::string>{}, false, true);
   }
 
   // std::string get_function(std::string filename, int line, int col) const {
@@ -74,8 +74,8 @@ public:
   std::string get_value(std::string const &var) {
     auto mfs = my_cmake.GetGlobalGenerator()->GetMakefiles();
 
-    // for (auto const &l : mfs[0]->GetListFiles())
-    //   std::cout << l << std::endl;
+    for (auto const &l : mfs[0]->GetListFiles())
+      std::cout << l << std::endl;
 
     // std::cout << "----------------" << std::endl;
 
