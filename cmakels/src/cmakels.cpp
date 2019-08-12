@@ -113,12 +113,17 @@ public:
   }
 };
 
+std::string uri_to_filename(std::string const &uri) {
+  return uri.substr(7, std::string::npos);
+}
+
 int main(int argc, char *argv[]) {
   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
   loguru::g_colorlogtostderr = false;
   loguru::init(argc, argv);
   loguru::add_file("sample_server.log", loguru::Append, loguru::Verbosity_MAX);
 
-  lscpp::lsp_launcher launcher{std::make_unique<cmakels>(argv[1], argv[2])};
+  lscpp::lsp_launcher launcher{
+      std::make_unique<cmakels>(uri_to_filename(argv[1]), argv[2])};
   launcher.start();
 }

@@ -23,9 +23,8 @@ private:
 
 public:
   cmake_query(std::string root_dir, std::string build_dir)
-      : root_dir_{"/home/vogtha/git/stella_old/stella"}, // TODO fix root_dir
-        build_dir_{root_dir_ / build_dir}, my_cmake{cmake::RoleProject,
-                                                    cmState::Project} {
+      : root_dir_{root_dir}, build_dir_{root_dir_ / build_dir},
+        my_cmake{cmake::RoleProject, cmState::Project} {
 
     cmSystemTools::EnsureStdPipes();
     // cmsys::Encoding::CommandLineArguments encoding_args =
@@ -60,7 +59,8 @@ public:
   cmMakefile *get_makefile(std::string const &uri) {
     auto mfs = my_cmake.GetGlobalGenerator()->GetMakefiles();
     for (auto mf : mfs) {
-      if (("file://" + mf->GetListFiles()[0]).compare(uri) == 0) {
+      if (("file://" + mf->GetListFiles()[0]).compare(uri) ==
+          0) { // TODO fix file://
         return mf;
       }
     }
@@ -79,7 +79,7 @@ public:
       auto var = mf->GetDefinition(name);
       return var ? var : "tried file" + mf->GetListFiles()[0];
     }
-    return "variable not found!";
+    return "<variable-not-found>";
   }
 };
 } // namespace cmake_query
