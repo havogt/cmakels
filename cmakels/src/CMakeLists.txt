@@ -19,3 +19,8 @@ target_compile_features(cmake_query PUBLIC cxx_std_17) # PUBLIC: header contains
 add_executable(cmakels cmakels.cpp)
 target_link_libraries(cmakels PRIVATE cmake_query)
 target_link_libraries(cmakels PRIVATE lscpp)
+target_link_libraries(cmakels PRIVATE stdc++fs)
+
+add_executable(test_cmake_query test_cmake_query.cpp)
+target_link_libraries(test_cmake_query PRIVATE cmake_query)
+target_link_libraries(test_cmake_query PRIVATE stdc++fs)

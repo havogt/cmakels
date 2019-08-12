@@ -38,37 +38,49 @@ public:
     my_cmake.Run(std::vector<std::string>{}, false);
   }
 
-  std::string get_function(std::string filename, int line, int col) const {
-    auto mfs =
-        my_cmake.GetGlobalGenerator()
-            ->GetMakefiles(); // GetCurrentMakefile(); //->GetListFiles();
+  // std::string get_function(std::string filename, int line, int col) const {
+  //   auto mfs =
+  //       my_cmake.GetGlobalGenerator()
+  //           ->GetMakefiles(); // GetCurrentMakefile(); //->GetListFiles();
 
-    for (auto const &l : mfs[0]->GetListFiles())
-      std::cout << l << std::endl;
+  //   for (auto const &l : mfs[0]->GetListFiles())
+  //     std::cout << l << std::endl;
 
-    std::cout << "----------------" << std::endl;
+  //   std::cout << "----------------" << std::endl;
 
-    for (cmMakefile *mf : mfs) {
-      for (cmListFile const &lf : mf->GetParsedListFiles()) {
-        std::cout << lf.Filename << std::endl;
-        if (lf.Filename.compare(filename) == 0) {
-          std::cout << "Found the file" << std::endl;
-          for (cmListFileFunction const &f : lf.Functions) {
-            std::cout << f.Name.Lower << " - " << f.Line << " - " << f.Col
-                      << " - " << f.EndCol << std::endl;
-            if (f.Line == line && col >= f.Col - f.Name.Lower.length() &&
-                col < f.EndCol) {
-              // std::cout << "Found the function" << std::endl;
-              std::cout << "Found " << f.Name.Lower << std::endl;
-            }
-            // std::cout << lf.Filename << ":" << f.Line << " ("
-            //           << f.Name.Original << ")" << std::endl;
-          }
-        }
-      }
-    }
-    std::cout << "done..." << std::endl;
-    return "";
+  //   for (cmMakefile *mf : mfs) {
+  //     for (cmListFile const &lf : mf->GetParsedListFiles()) {
+  //       std::cout << lf.Filename << std::endl;
+  //       if (lf.Filename.compare(filename) == 0) {
+  //         std::cout << "Found the file" << std::endl;
+  //         for (cmListFileFunction const &f : lf.Functions) {
+  //           std::cout << f.Name.Lower << " - " << f.Line << " - " << f.Col
+  //                     << " - " << f.EndCol << std::endl;
+  //           if (f.Line == line && col >= f.Col - f.Name.Lower.length() &&
+  //               col < f.EndCol) {
+  //             // std::cout << "Found the function" << std::endl;
+  //             std::cout << "Found " << f.Name.Lower << std::endl;
+  //           }
+  //           // std::cout << lf.Filename << ":" << f.Line << " ("
+  //           //           << f.Name.Original << ")" << std::endl;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   std::cout << "done..." << std::endl;
+  //   return "";
+  // }
+
+  std::string get_value(std::string const &var) {
+    auto mfs = my_cmake.GetGlobalGenerator()->GetMakefiles();
+
+    // for (auto const &l : mfs[0]->GetListFiles())
+    //   std::cout << l << std::endl;
+
+    // std::cout << "----------------" << std::endl;
+
+    cmMakefile *mf = mfs[0];
+    return mf->GetDefinition(var);
   }
 
   std::string get_function_from_buffer(std::string const &buffer, int line,
@@ -190,7 +202,8 @@ int main() {
   //   for (cmListFile const &lf : mf->GetParsedListFiles()) {
   //     // std::cout << lf.Filename << std::endl;
   //     for (cmListFileFunction const &f : lf.Functions)
-  //       std::cout << lf.Filename << ":" << f.Line << " (" << f.Name.Original
+  //       std::cout << lf.Filename << ":" << f.Line << " (" <<
+  //       f.Name.Original
   //                 << ")" << std::endl;
   //   }
   // }
@@ -198,15 +211,17 @@ int main() {
   // my_cmake.Generate();
 
   cmake_query query;
-  query.get_function("/home/vogtha/lsp/experiments/cmakels/cmakels/test/"
-                     "playground/cmake_example/my_subdir/CMakeLists.txt",
-                     1, 1);
+  // query.get_function("/home/vogtha/lsp/experiments/cmakels/cmakels/test/"
+  //                    "playground/cmake_example/my_subdir/CMakeLists.txt",
+  //                    1, 1);
 
-  std::string a_cmake_file = "cmake_minimum_required(VERSION 3.14.0)\n"
-                             "project(a_test_project LANGUAGES CXX)\n\n"
-                             "message(STATUS \"test\")\n\n"
-                             "set(MY_VAR \"blabla\")\n\n"
-                             "add_subdirectory(my_subdir)\n";
+  // std::string a_cmake_file = "cmake_minimum_required(VERSION 3.14.0)\n"
+  //                            "project(a_test_project LANGUAGES CXX)\n\n"
+  //                            "message(STATUS \"test\")\n\n"
+  //                            "set(MY_VAR \"blabla\")\n\n"
+  //                            "add_subdirectory(my_subdir)\n";
 
-  query.get_function_from_buffer(a_cmake_file, 1, 6);
+  // query.get_function_from_buffer(a_cmake_file, 1, 6);
+
+  std::cout << "reading MY_VAR: " << query.get_value("MY_VAR") << std::endl;
 }

@@ -16,7 +16,8 @@ foreach(file IN LISTS TEST_SOURCES)
     #         "${CMake_SOURCE_DIR}/Utilities"
     # )
     # target_link_libraries(${test_name} PRIVATE CMakeLib)
-    # target_compile_features(${test_name} PUBLIC cxx_std_17)
+
+    target_compile_features(${test_name} PUBLIC cxx_std_17)
 endforeach()
 
-#add_subdirectory(playground)
+add_subdirectory(playground)
