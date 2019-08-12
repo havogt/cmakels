@@ -3,6 +3,7 @@
 	"displayName": "cmakels client",
 	"description": "A VSCode client for cmakels",
 	"version": "0.0.1",
+    "publisher": "havogt",
 	"engines": {
 		"vscode": "^1.31.0"
 	},

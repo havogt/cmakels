@@ -1,6 +1,5 @@
 # cmakels-client README
 
-This is the README for your extension "cmakels-client". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 
@@ -35,19 +34,6 @@ Calling out known issues can help limit users opening duplicate issues against y
 
 Users appreciate release notes as you update your extension.
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
 
 ## Working with Markdown
 
@@ -62,4 +48,3 @@ Added features X, Y, and Z.
 * [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
 * [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
-**Enjoy!**
