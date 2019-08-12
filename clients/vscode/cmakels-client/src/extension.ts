@@ -24,12 +24,11 @@ let client: LanguageClient;
 export function activate(context: ExtensionContext) {
 	let executablePath = getConfig<string>('path');
 
+	let rootpath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.toString() : "undefined";
 	let serverOptions: ServerOptions = {
 		command: executablePath,
-		// args: ["--variable_hover", "--debug_log"]
+		args: [rootpath, getConfig<string>("buildDirectory")]
 	};
-
-
 
 	// const filePattern: string = '**/*.{' +
 	// 	['CMakeLists.txt', 'cmake', 'cmake.in'].join()

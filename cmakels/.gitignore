@@ -1,6 +1,6 @@
 .cproject
 .project
 .settings
-build
+build*/
 external
 

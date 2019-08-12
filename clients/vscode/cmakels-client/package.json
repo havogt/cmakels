@@ -39,6 +39,11 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the language server."
+				},
+				"cmakels.buildDirectory": {
+					"type": "string",
+					"default": "build",
+					"description": "Location of CMakeCache.txt as configured by the user (or as used by the cmake-tools extension) relative to workspaceRoot."
 				}
 			}
 		}
