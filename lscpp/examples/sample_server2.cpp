@@ -21,6 +21,7 @@ public:
     protocol::ServerCapabilities capabilites;
     capabilites.hoverProvider = true;
     capabilites.completionProvider = protocol::CompletionOptions{};
+    capabilites.definitionProvider = true;
     protocol::TextDocumentSyncOptions sync;
     sync.openClose = true;
     sync.change = protocol::TextDocumentSyncKind::Full;
@@ -34,6 +35,11 @@ public:
   protocol::Hover
   hover(protocol::TextDocumentPositionParams position) override {
     return {"Blablabla!" + position.textDocument.uri};
+  }
+
+  protocol::Location
+  definition(protocol::TextDocumentPositionParams position) override {
+    return {position.textDocument.uri, {{0, 0}, {0, 0}}};
   }
 
   std::variant<std::vector<protocol::CompletionItem>>

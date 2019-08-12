@@ -9,6 +9,7 @@
 #include "protocol/Hover.h"
 #include "protocol/InitializeParams.h"
 #include "protocol/InitializeResult.h"
+#include "protocol/Location.h"
 #include "protocol/TextDocumentPositionParams.h"
 #include <variant>
 
@@ -18,6 +19,8 @@ class TextDocumentService {
 public:
   virtual protocol::Hover
   hover(protocol::TextDocumentPositionParams position) = 0;
+  virtual protocol::Location
+  definition(protocol::TextDocumentPositionParams position) = 0;
 
   virtual std::variant<
       std::vector<protocol::CompletionItem> /* , CompletionList */> // TODO

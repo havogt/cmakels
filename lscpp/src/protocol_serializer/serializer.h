@@ -11,9 +11,11 @@
 #include "../protocol/Hover.h"
 #include "../protocol/InitializeParams.h"
 #include "../protocol/InitializeResult.h"
+#include "../protocol/Location.h"
 #include "../protocol/Range.h"
 #include "../protocol/TextDocumentIdentifier.h"
 #include "../protocol/TextDocumentItem.h"
+#include "../protocol/TextDocumentPositionParams.h"
 
 // serialization for std::variant
 namespace nlohmann {
@@ -167,6 +169,7 @@ void to_json(nlohmann::json &j, const TextDocumentSyncOptions &m) {
 void to_json(nlohmann::json &j, const ServerCapabilities &m) {
   j = nlohmann::json{};
   j.emplace("hoverProvider", m.hoverProvider);
+  j.emplace("definitionProvider", m.definitionProvider);
   if (m.completionProvider) {
     j.emplace("completionProvider", m.completionProvider.value());
   }
@@ -221,6 +224,24 @@ void to_json(nlohmann::json &j, const Hover &m) {
   if (m.range) {
     // j.emplace("range", m.range.value()); // TODO
   }
+}
+
+void to_json(nlohmann::json &j, const Position &m) {
+  j = nlohmann::json{};
+  j.emplace("line", m.line);
+  j.emplace("character", m.character);
+}
+
+void to_json(nlohmann::json &j, const Range &m) {
+  j = nlohmann::json{};
+  j.emplace("start", m.start);
+  j.emplace("end", m.end);
+}
+
+void to_json(nlohmann::json &j, const Location &m) {
+  j = nlohmann::json{};
+  j.emplace("uri", m.uri);
+  j.emplace("range", m.range);
 }
 
 } // namespace protocol

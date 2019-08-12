@@ -96,7 +96,12 @@ struct ServerCapabilities {
   /**
    * The server provides hover support.
    */
-  bool hoverProvider;
+  bool hoverProvider = false;
+
+  /**
+   * The server provides goto definition support.
+   */
+  bool definitionProvider = false;
 
   /**
    * The server provides completion support.

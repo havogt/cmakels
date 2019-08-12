@@ -1,3 +1,4 @@
+#include "protocol/TextDocumentPositionParams.h"
 #pragma once
 
 #include "../external/json.hpp"
@@ -79,6 +80,13 @@ public:
         protocol::CompletionParams params{};
         j.at("params").get_to(params);
         auto result = server_.getTextDocumentService().completion(params);
+        auto json_result = make_response_message(j["id"], result);
+        return json_result.dump();
+      } else if (j["method"] == "textDocument/definition") {
+        LOG_F(INFO, "Received textDocument/definition");
+        protocol::TextDocumentPositionParams params{};
+        j.at("params").get_to(params);
+        auto result = server_.getTextDocumentService().definition(params);
         auto json_result = make_response_message(j["id"], result);
         return json_result.dump();
       } else if (j["method"] == "textDocument/didOpen") {
