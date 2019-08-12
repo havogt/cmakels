@@ -4,6 +4,7 @@
 #include "loguru.hpp"
 #include <cmListFileCache.h> //TODO remove dependency
 
+#include <experimental/filesystem>
 #include <lsp_launcher.h>
 #include <lsp_server.h>
 #include <map>
@@ -55,6 +56,7 @@ public:
     protocol::ServerCapabilities capabilites;
     capabilites.hoverProvider = true;
     capabilites.completionProvider = protocol::CompletionOptions{};
+    capabilites.definitionProvider = true;
     protocol::TextDocumentSyncOptions sync;
     sync.openClose = true;
     sync.change = protocol::TextDocumentSyncKind::Full;
@@ -84,6 +86,26 @@ public:
     } catch (std::runtime_error e) {
       return {"No result: " + std::string{e.what()}};
     }
+  }
+
+  protocol::Location
+  definition(protocol::TextDocumentPositionParams position) override {
+    auto result = cmake_query::get_function(
+        *(open_files[position.textDocument.uri]),
+        {static_cast<std::size_t>(position.position.line),
+         static_cast<std::size_t>(position.position.character)});
+    if (result.function.Name.Lower.compare("add_subdirectory") == 0) {
+      namespace fs = std::experimental::filesystem;
+      fs::path p = position.textDocument.uri;
+      p.remove_filename();
+      return {(p /
+               cmake_query::get_name(
+                   cmake_query::get_arguments(result.function)[0]) /
+               "CMakeLists.txt")
+                  .c_str(),
+              {{0, 0}, {0, 0}}};
+    }
+    return {position.textDocument.uri, {{0, 0}, {0, 0}}};
   }
 
   std::variant<std::vector<protocol::CompletionItem>>
