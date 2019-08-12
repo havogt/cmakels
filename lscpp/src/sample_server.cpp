@@ -20,7 +20,7 @@ std::string make_lsp_message(std::string content) {
 }
 
 class lsp_server {
- public:
+public:
   stdio_transporter transporter_;
 
   void start() {
@@ -79,13 +79,13 @@ class lsp_server {
     process.wait();
   }
 
- private:
-  std::queue<std::string> queue_;  // TODO make it threadsafe
+private:
+  std::queue<std::string> queue_; // TODO make it threadsafe
 };
 
-}  // namespace lscpp
+} // namespace lscpp
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
   loguru::g_colorlogtostderr = false;
   loguru::init(argc, argv);

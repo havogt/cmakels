@@ -5,6 +5,7 @@
 #include "protocol/DidChangeTextDocumentParams.h"
 #include "protocol/DidCloseTextDocumentParams.h"
 #include "protocol/DidOpenTextDocumentParams.h"
+#include "protocol/DidSaveTextDocumentParams.h"
 #include "protocol/Hover.h"
 #include "protocol/InitializeParams.h"
 #include "protocol/InitializeResult.h"
@@ -25,6 +26,7 @@ public:
   virtual void didOpen(protocol::DidOpenTextDocumentParams params) = 0;
   virtual void didChange(protocol::DidChangeTextDocumentParams params) = 0;
   virtual void didClose(protocol::DidCloseTextDocumentParams params) = 0;
+  virtual void didSave(protocol::DidSaveTextDocumentParams params) = 0;
 };
 
 class lsp_server {

@@ -28,6 +28,16 @@ enum class TextDocumentSyncKind {
   Incremental = 2
 };
 
+/**
+ * Save options.
+ */
+struct SaveOptions {
+  /**
+   * The client is supposed to include the content on save.
+   */
+  bool includeText = false;
+};
+
 struct TextDocumentSyncOptions {
   /**
    * Open and close notifications are sent to the server. If omitted open close
@@ -55,7 +65,7 @@ struct TextDocumentSyncOptions {
    * If present save notifications are sent to the server. If omitted the
    * notification should not be sent.
    */
-  // save ?: SaveOptions; TODO
+  std::optional<SaveOptions> save;
 };
 
 /**

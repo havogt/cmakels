@@ -98,8 +98,9 @@ public:
         server_.getTextDocumentService().didClose(params);
       } else if (j["method"] == "textDocument/didSave") {
         LOG_F(INFO, "Received textDocument/didSave");
-        return make_notification_message("Ignored textDocument/didSave.")
-            .dump();
+        protocol::DidSaveTextDocumentParams params{};
+        j.at("params").get_to(params);
+        server_.getTextDocumentService().didSave(params);
       } else if (j["method"] == "textDocument/willSave") {
         LOG_F(INFO, "Received textDocument/willSave");
       }

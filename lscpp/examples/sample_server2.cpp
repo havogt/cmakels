@@ -55,6 +55,10 @@ public:
   void didClose(protocol::DidCloseTextDocumentParams params) override {
     LOG_F(INFO, "Closing: %s", params.textDocument.uri.c_str());
   }
+
+  void didSave(protocol::DidSaveTextDocumentParams params) override {
+    LOG_F(INFO, "Saving: %s", params.textDocument.uri.c_str());
+  }
 };
 
 } // namespace lscpp

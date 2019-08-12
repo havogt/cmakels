@@ -1,4 +1,3 @@
-#include "protocol/TextDocumentIdentifier.h"
 #pragma once
 
 #include "../../external/json.hpp"
@@ -8,10 +7,12 @@
 #include "../protocol/DidChangeTextDocumentParams.h"
 #include "../protocol/DidCloseTextDocumentParams.h"
 #include "../protocol/DidOpenTextDocumentParams.h"
+#include "../protocol/DidSaveTextDocumentParams.h"
 #include "../protocol/Hover.h"
 #include "../protocol/InitializeParams.h"
 #include "../protocol/InitializeResult.h"
 #include "../protocol/Range.h"
+#include "../protocol/TextDocumentIdentifier.h"
 #include "../protocol/TextDocumentItem.h"
 
 // serialization for std::variant
@@ -60,6 +61,16 @@ void from_json(const nlohmann::json &j,
 
 void from_json(const nlohmann::json &j, protocol::TextDocumentIdentifier &p) {
   j.at("uri").get_to(p.uri);
+}
+
+void from_json(const nlohmann::json &j,
+               protocol::DidSaveTextDocumentParams &p) {
+  j.at("textDocument").get_to(p.textDocument);
+  if (j.find("text") != j.end()) {
+    std::string text;
+    j["text"].get_to(text);
+    p.text = text;
+  }
 }
 
 void from_json(const nlohmann::json &j,
@@ -138,13 +149,19 @@ void to_json(nlohmann::json &j, const CompletionOptions &m) {
   j.emplace("triggerCharacters", m.triggerCharacters);
 }
 
+void to_json(nlohmann::json &j, const SaveOptions &m) {
+  j = nlohmann::json{};
+  j.emplace("includeText", m.includeText);
+}
+
 void to_json(nlohmann::json &j, const TextDocumentSyncOptions &m) {
   j = nlohmann::json{};
   j.emplace("openClose", m.openClose);
   j.emplace("change", m.change);
   j.emplace("willSave", m.willSave);
   j.emplace("willSaveWaitUntil", m.willSaveWaitUntil);
-  // j.emplace("save", m.save); // TODO
+  if (m.save)
+    j.emplace("save", m.save.value());
 }
 
 void to_json(nlohmann::json &j, const ServerCapabilities &m) {
