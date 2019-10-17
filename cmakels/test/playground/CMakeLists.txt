@@ -1,3 +1,5 @@
+enable_testing()
+
 add_executable(test_cmake_integration test_cmake_integration.cpp)
 target_include_directories(test_cmake_integration
     PRIVATE "${CMake_BINARY_DIR}/Source"
@@ -8,6 +10,7 @@ target_include_directories(test_cmake_integration
             "${CMake_SOURCE_DIR}/Utilities"
     )
 target_link_libraries(test_cmake_integration CMakeLib)
+add_test(test_cmake_integration $<TARGET:test_cmake_integration>)
 
 add_executable(test_setup_duplication test_setup_duplication.cpp)
 target_include_directories(test_setup_duplication
