@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.14.7)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 project(lscpp LANGUAGES CXX)
@@ -15,29 +15,15 @@ find_package(Threads)
 
 add_subdirectory(src)
 
-add_executable(sample_server src/sample_server.cpp)
-target_compile_options(sample_server PRIVATE -Wall)
-target_link_libraries(sample_server PRIVATE Threads::Threads)
-target_link_libraries(sample_server PRIVATE loguru)
-target_link_libraries(sample_server PRIVATE lscpp)
-install(TARGETS sample_server DESTINATION bin)
+# add_executable(sample_server src/sample_server.cpp)
+# target_compile_options(sample_server PRIVATE -Wall)
+# target_link_libraries(sample_server PRIVATE Threads::Threads)
+# target_link_libraries(sample_server PRIVATE loguru)
+# target_link_libraries(sample_server PRIVATE lscpp)
+# install(TARGETS sample_server DESTINATION bin)
 
 add_subdirectory(examples)
 
 if(BUILD_TESTING)
-    enable_testing()
-    include(FetchContent)
-	FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-		GIT_TAG        release-1.8.1
-	)
-
-	FetchContent_GetProperties(googletest)
-	if(NOT googletest_POPULATED)
-        FetchContent_Populate(googletest)
-        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-	endif()
-
 	add_subdirectory(test)
 endif()

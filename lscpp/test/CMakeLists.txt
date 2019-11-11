@@ -1,17 +1,27 @@
-add_executable(test_read_header test_read_header.cpp)
-target_link_libraries(test_read_header gtest_main lscpp)
+function(add_lscpp_test)
+    set(options)
+    set(oneValueArgs SOURCE)
+    set(multiValueArgs LIBRARIES)
+    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-add_executable(test_message_handling_v1 test_message_handling_v1.cpp)
-target_link_libraries(test_message_handling_v1 gtest_main)
+    get_filename_component(test_name ${ARG_SOURCE} NAME_WE)
+    add_executable(${test_name} ${ARG_SOURCE})
+    target_link_libraries(${test_name} gtest_main ${ARG_LIBRARIES})
+    add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
+endfunction()
 
-add_executable(test_message_handling_v2 test_message_handling_v2.cpp)
-target_link_libraries(test_message_handling_v2 gtest_main)
+enable_testing()
+include(FetchContent)
 
-#add_executable(test_lsp_implementation test_lsp_implementation.cpp)
-#target_link_libraries(test_lsp_implementation gtest_main)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        release-1.10.0
+)
+FetchContent_MakeAvailable(googletest)
 
-add_executable(test_json_serializable test_json_serializable.cpp)
-target_link_libraries(test_json_serializable gtest_main)
-
-add_executable(test_std_variant_visitor test_std_variant_visitor.cpp)
-target_link_libraries(test_std_variant_visitor gtest_main)
+add_lscpp_test(SOURCE test_read_header.cpp LIBRARIES lscpp)
+add_lscpp_test(SOURCE test_message_handling_v1.cpp)
+add_lscpp_test(SOURCE test_message_handling_v2.cpp)
+add_lscpp_test(SOURCE test_json_serializable.cpp)
+add_lscpp_test(SOURCE test_std_variant_visitor.cpp)
