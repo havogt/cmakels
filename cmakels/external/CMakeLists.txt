@@ -1,4 +1,4 @@
-set(CMAKELS_CMAKE_REPOSITORY "git@github.com:havogt/cmake")
+set(CMAKELS_CMAKE_REPOSITORY "https://github.com/havogt/cmake.git")
 set(CMAKELS_CMAKE_BRANCH cmakels)
 
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
