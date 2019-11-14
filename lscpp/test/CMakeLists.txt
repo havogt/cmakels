@@ -10,7 +10,6 @@ function(add_lscpp_test)
     add_test(NAME ${test_name} COMMAND $<TARGET_FILE:${test_name}>)
 endfunction()
 
-enable_testing()
 include(FetchContent)
 
 FetchContent_Declare(
@@ -21,7 +20,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_lscpp_test(SOURCE test_read_header.cpp LIBRARIES lscpp)
-add_lscpp_test(SOURCE test_message_handling_v1.cpp)
+# add_lscpp_test(SOURCE test_message_handling_v1.cpp)
 add_lscpp_test(SOURCE test_message_handling_v2.cpp)
 add_lscpp_test(SOURCE test_json_serializable.cpp)
 add_lscpp_test(SOURCE test_std_variant_visitor.cpp)
