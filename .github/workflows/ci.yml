@@ -12,6 +12,6 @@ jobs:
     - name: configure
       run: mkdir build && cd build && cmake ..
     - name: build
-      run: cmake --build build
+      run: cmake --build build --parallel 2
     - name: test
-      run: ctest build
+      run: cd build && ctest
