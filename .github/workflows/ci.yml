@@ -3,14 +3,21 @@ name: CI
 on: [push]
 
 jobs:
-  build-ubuntu:
+  build:
 
-    runs-on: ubuntu-latest
-    
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            COMPILER: g++
+          - os: ubuntu-latest
+            COMPILER: clang++
     steps:
     - uses: actions/checkout@v1
     - name: configure
-      run: mkdir build && cd build && cmake ..
+      run: mkdir build && cd build && CXX=`which ${{ matrix.COMPILER }}` cmake ..
     - name: build
       run: cmake --build build --parallel 2
     - name: test
