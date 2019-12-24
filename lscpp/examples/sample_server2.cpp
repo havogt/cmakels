@@ -76,6 +76,5 @@ int main(int argc, char *argv[]) {
   loguru::add_file("sample_server.log", loguru::Truncate,
                    loguru::Verbosity_MAX);
 
-  lscpp::lsp_launcher launcher;
-  launcher.start(lscpp::my_lsp_server{});
+  lscpp::launch(lscpp::my_lsp_server{});
 }

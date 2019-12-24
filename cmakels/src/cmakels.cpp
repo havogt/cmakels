@@ -145,7 +145,5 @@ int main(int argc, char *argv[]) {
   loguru::init(argc, argv);
   loguru::add_file("sample_server.log", loguru::Append, loguru::Verbosity_MAX);
 
-  lscpp::lsp_launcher launcher{
-      std::make_unique<cmakels>(uri_to_filename(argv[1]), argv[2])};
-  launcher.start();
+  lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]});
 }
