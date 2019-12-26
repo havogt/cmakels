@@ -19,8 +19,14 @@ target_compile_features(cmake_query PUBLIC cxx_std_17) # PUBLIC: header contains
 add_executable(cmakels cmakels.cpp)
 target_link_libraries(cmakels PRIVATE cmake_query)
 target_link_libraries(cmakels PRIVATE lscpp)
+# TODO actually need to check if libstdc++ or libc++
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
 target_link_libraries(cmakels PRIVATE stdc++fs)
+endif()
 
 add_executable(test_cmake_query test_cmake_query.cpp)
 target_link_libraries(test_cmake_query PRIVATE cmake_query)
-target_link_libraries(test_cmake_query PRIVATE stdc++fs)
+# TODO actually need to check if libstdc++ or libc++
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+    target_link_libraries(test_cmake_query PRIVATE stdc++fs)
+endif()

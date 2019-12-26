@@ -39,7 +39,7 @@ public:
     // cmSystemTools::FindCMakeResources((wd + "/cmakels").c_str());
     // std::cout << cmSystemTools::GetCMakeCommand().c_str() << std::endl;
 
-    my_cmake.SetHomeDirectory(root_dir_);
+    my_cmake.SetHomeDirectory(root_dir_.string());
   }
 
   void configure() {
@@ -49,7 +49,7 @@ public:
                   cmake_query_build_dir / "CMakeCache.txt",
                   fs::copy_options::overwrite_existing);
 
-    my_cmake.SetHomeOutputDirectory(cmake_query_build_dir);
+    my_cmake.SetHomeOutputDirectory(cmake_query_build_dir.string());
 
     my_cmake.Run(std::vector<std::string>{}, false, true);
   }

@@ -101,7 +101,7 @@ public:
                cmake_query::get_name(
                    cmake_query::get_arguments(result.function)[0]) /
                "CMakeLists.txt")
-                  .c_str(),
+                  .string(),
               {{0, 0}, {0, 0}}};
     }
     return {position.textDocument.uri, {{0, 0}, {0, 0}}};
