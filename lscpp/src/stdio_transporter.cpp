@@ -13,10 +13,12 @@
 namespace lscpp {
 
 void stdio_transporter::reserve(std::size_t size) {
-  if (size > size_) {
+  bool reallocate = false;
+  while (size > size_) {
+    reallocate = true;
     size_ *= 2;
-    data_.reset(new char[size_]);
   }
+  data_.reset(new char[size_]);
 }
 
 char stdio_transporter::read_char() {
