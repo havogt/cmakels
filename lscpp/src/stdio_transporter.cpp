@@ -12,6 +12,13 @@
 
 namespace lscpp {
 
+void stdio_transporter::reserve(std::size_t size) {
+  if (size > size_) {
+    size_ *= 2;
+    data_.reset(new char[size_]);
+  }
+}
+
 char stdio_transporter::read_char() {
   char c;
   ::read(stdin_fileno, &c, 1);
@@ -19,11 +26,10 @@ char stdio_transporter::read_char() {
 }
 
 std::string stdio_transporter::read_message(std::size_t length) {
-  char *str = new char[length];
-  ::read(stdin_fileno, str, length);
+  reserve(length);
+  ::read(stdin_fileno, data_.get(), length);
   std::string res;
-  res.append(str, length);
-  delete[] str; // TODO pre-allocated buffer
+  res.append(data_.get(), length);
   return res;
 }
 
@@ -32,5 +38,8 @@ void stdio_transporter::write_message(std::string str) {
   std::size_t sizeof_reply = str.size();
   ::write(stdout_fileno, cstr, sizeof_reply);
 }
+
+#undef stdin_fileno
+#undef stdout_fileno
 
 } // namespace lscpp
