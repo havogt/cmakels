@@ -4,7 +4,7 @@
 #include "loguru.hpp"
 #include <cmListFileCache.h> //TODO remove dependency
 
-#include <experimental/filesystem>
+#include "support/filesystem.hpp"
 #include <lsp_launcher.h>
 #include <lsp_server.h>
 #include <map>
@@ -95,7 +95,6 @@ public:
         {static_cast<std::size_t>(position.position.line),
          static_cast<std::size_t>(position.position.character)});
     if (result.function.Name.Lower.compare("add_subdirectory") == 0) {
-      namespace fs = std::experimental::filesystem;
       fs::path p = position.textDocument.uri;
       p.remove_filename();
       return {(p /

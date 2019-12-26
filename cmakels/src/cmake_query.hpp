@@ -8,12 +8,10 @@
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
 #include "cmake.h"
-#include <experimental/filesystem>
+#include "support/filesystem.hpp"
 #include <iostream>
 
 namespace cmake_query {
-
-namespace fs = std::experimental::filesystem;
 
 class cmake_query {
 private:
