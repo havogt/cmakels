@@ -71,5 +71,5 @@ int main(int argc, char *argv[]) {
                    loguru::Verbosity_MAX);
 
   lscpp::launch(lscpp::my_lsp_server{}, lscpp::launch_config{},
-                lscpp::stdio_transporter{true});
+                lscpp::stdio_transporter{false});
 }

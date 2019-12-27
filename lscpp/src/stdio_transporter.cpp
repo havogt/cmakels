@@ -1,5 +1,7 @@
 #include "stdio_transporter.h"
+#include <iomanip>
 #include <optional>
+#include <sstream>
 
 #ifdef _WIN32
 #include <io.h>
@@ -12,6 +14,39 @@
 #endif
 
 namespace lscpp {
+
+namespace {
+std::string filename(int id, std::string suffix) {
+  std::stringstream ss;
+  ss << ".lscpp/" << std::setw(3) << std::setfill('0') << id << suffix;
+  return ss.str();
+}
+} // namespace
+
+comm_logger::~comm_logger() {
+  if (file_open_) {
+    fclose(cur_file_);
+  }
+}
+
+void comm_logger::open(std::string suffix) {
+  auto name = filename(msg_id_, suffix);
+  cur_file_ = std::fopen(name.c_str(), "w");
+  file_open_ = true;
+  msg_id_++;
+}
+
+void comm_logger::open_in() { open(".in"); }
+void comm_logger::open_out() { open(".out"); }
+
+void comm_logger::close() {
+  file_open_ = false;
+  std::fclose(cur_file_);
+}
+
+void comm_logger::write(const void *buf, std::size_t size) {
+  ::write(fileno(cur_file_), buf, size);
+}
 
 stdio_transporter::stdio_transporter(bool log_communication)
     : comm_logger_{log_communication ? std::optional<comm_logger>{comm_logger{}}

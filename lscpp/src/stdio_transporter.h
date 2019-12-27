@@ -4,10 +4,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <unistd.h>
-
-#include <iomanip>
-#include <sstream>
 
 namespace lscpp {
 
@@ -16,36 +12,12 @@ struct comm_logger {
   bool file_open_ = false;
   std::FILE *cur_file_;
 
-  ~comm_logger() {
-    if (file_open_) {
-      fclose(cur_file_);
-    }
-  }
-
-  std::string filename(std::string suffix) {
-    std::stringstream ss;
-    ss << ".lscpp/" << std::setw(3) << std::setfill('0') << msg_id_ << suffix;
-    return ss.str();
-  }
-
-  void open(std::string suffix) {
-    auto name = filename(suffix);
-    cur_file_ = std::fopen(name.c_str(), "w");
-    file_open_ = true;
-    msg_id_++;
-  }
-
-  void open_in() { open(".in"); }
-  void open_out() { open(".out"); }
-
-  void close() {
-    file_open_ = false;
-    std::fclose(cur_file_);
-  }
-
-  void write(const void *buf, std::size_t size) {
-    ::write(fileno(cur_file_), buf, size);
-  }
+  ~comm_logger();
+  void open(std::string suffix);
+  void open_in();
+  void open_out();
+  void close();
+  void write(const void *buf, std::size_t size);
 };
 
 class stdio_transporter {
