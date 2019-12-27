@@ -28,7 +28,6 @@ inline std::string add_lsp_header(std::string content) {
 
 struct launch_config {
   int startup_delay = 0; // in seconds
-  bool dump_communication = false;
 };
 
 template <class MessageHandler = lsp_message_handler>

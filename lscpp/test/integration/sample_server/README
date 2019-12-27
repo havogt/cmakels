@@ -1,0 +1,4 @@
+Emulates communication with the sample_server by sending pre-recorded messages.
+The test relies on the language server to respond in the same order (as is currently implemented).
+To record a communication you can enable the comm_logger of stdio_transporter which logs one message per file.
+Simple `cat` all the `.in` messages (in correct order) to get the input for the test.

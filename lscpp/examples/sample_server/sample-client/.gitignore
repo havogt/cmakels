@@ -1,0 +1,4 @@
+node_modules
+vsc-*quickstart.md
+out/
+*.vsix

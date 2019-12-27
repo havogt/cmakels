@@ -1,10 +1,4 @@
-#include <any>
-#include <future>
 #include <loguru.hpp>
-#include <optional>
-#include <queue>
-#include <sstream>
-#include <string>
 
 #include <lsp_launcher.h>
 #include <lsp_server.h>
@@ -76,5 +70,6 @@ int main(int argc, char *argv[]) {
   loguru::add_file("sample_server.log", loguru::Truncate,
                    loguru::Verbosity_MAX);
 
-  lscpp::launch(lscpp::my_lsp_server{});
+  lscpp::launch(lscpp::my_lsp_server{}, lscpp::launch_config{},
+                lscpp::stdio_transporter{true});
 }

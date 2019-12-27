@@ -2,4 +2,6 @@
 .project
 .settings
 
+.lscpp
+
 /build/

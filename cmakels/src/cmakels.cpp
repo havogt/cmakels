@@ -148,8 +148,8 @@ int main(int argc, char *argv[]) {
   lscpp::launch_config config;
 #ifndef NDEBUG
   config.startup_delay = 15;
-  config.dump_communication = true;
 #endif
 
-  lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]}, config);
+  lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]}, config,
+                lscpp::stdio_transporter{false});
 }
