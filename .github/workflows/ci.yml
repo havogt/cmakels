@@ -21,3 +21,5 @@ jobs:
       run: cmake --build lscpp/build --parallel 2
     - name: test
       run: cd lscpp/build && ctest -VV #--output-on-failure
+    - name: print result
+      run: cat test/integration/sample_server/sample_server.log
