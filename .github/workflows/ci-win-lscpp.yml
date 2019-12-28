@@ -20,3 +20,6 @@ jobs:
       run: |
         cd lscpp/build
         ctest -E test_read_header -C Debug --output-on-failure
+    - name: print log
+      if: failure()
+      run: type lscpp/build/test/integration/sample_server/sample_server.log
