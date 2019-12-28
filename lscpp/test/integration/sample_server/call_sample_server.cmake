@@ -4,7 +4,7 @@ execute_process(
     COMMAND ${SAMPLE_SERVER_EXECUTABLE}
     OUTPUT_VARIABLE outvar
     RESULT_VARIABLE resvar
-    INPUT_FILE ${WORKDIR}/comm.in
+    INPUT_FILE ${WORKDIR}/comm.in.lscpp
     TIMEOUT 20
     )
 
