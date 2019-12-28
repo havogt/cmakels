@@ -19,4 +19,4 @@ jobs:
     - name: test
       run: |
         cd lscpp/build
-        ctest -E test_read_header --output-on-failure
+        ctest -E test_read_header -C Debug --output-on-failure
