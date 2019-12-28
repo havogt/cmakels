@@ -5,6 +5,7 @@ execute_process(
     OUTPUT_VARIABLE outvar
     RESULT_VARIABLE resvar
     INPUT_FILE ${WORKDIR}/comm.in
+    TIMEOUT 20
     )
 
 if(NOT resvar EQUAL 0)
