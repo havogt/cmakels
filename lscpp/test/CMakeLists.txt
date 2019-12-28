@@ -19,8 +19,11 @@ FetchContent_Declare(
 )
 FetchContent_GetProperties(googletest)
 if(NOT googletest_POPULATED)
-  FetchContent_Populate(googletest)
-  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    endif()
+    FetchContent_Populate(googletest)
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
 endif()
 
 add_lscpp_test(SOURCE test_read_header.cpp LIBRARIES lscpp)
