@@ -4,7 +4,7 @@ execute_process(
     COMMAND ${SAMPLE_SERVER_EXECUTABLE}
     OUTPUT_VARIABLE outvar
     RESULT_VARIABLE resvar
-    INPUT_FILE comm.in
+    INPUT_FILE ${WORKDIR}/comm.in
     )
 
 if(NOT resvar EQUAL 0)

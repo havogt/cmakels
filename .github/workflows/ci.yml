@@ -15,9 +15,9 @@ jobs:
     - uses: actions/checkout@v1
     - name: configure
       run: |
-        mkdir build && cd build
+        mkdir lscpp/build && cd lscpp/build
         CXX=`which ${{ matrix.compiler }}` cmake ..
     - name: build
-      run: cmake --build build --parallel 2
+      run: cmake --build lscpp/build --parallel 2
     - name: test
-      run: cd build && ctest -VV #--output-on-failure
+      run: cd lscpp/build && ctest -VV #--output-on-failure
