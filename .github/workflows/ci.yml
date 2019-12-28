@@ -23,4 +23,4 @@ jobs:
       run: cd lscpp/build && ctest -VV #--output-on-failure
     - name: print result
       if: failure()
-      run: cat test/integration/sample_server/sample_server.log
+      run: cat lscpp/build/test/integration/sample_server/sample_server.log
