@@ -1,11 +1,11 @@
-# add_test(
-#     integration-simple_comm
-#     ${PROJECT_BINARY_DIR}/examples/sample_server/sample_server < ${CMAKE_CURRENT_SOURCE_DIR}/comm.in
-#     # WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#     )
+add_test(
+    integration-sample_server-direct
+    ${PROJECT_BINARY_DIR}/examples/sample_server/sample_server < ${CMAKE_CURRENT_SOURCE_DIR}/comm.in.lscpp
+    # WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
 
 add_test(
-    NAME integration-simple_comm
+    NAME integration-sample_server
     COMMAND
         ${CMAKE_COMMAND}
             -DWORKDIR=${CMAKE_CURRENT_SOURCE_DIR}
