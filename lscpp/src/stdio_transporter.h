@@ -7,17 +7,23 @@
 
 namespace lscpp {
 
+// The logger is currently implemented using the same technique as the
+// stdio_transporter uses for communication (i.e. file descriptors). This is a
+// very conservative choice as I am not very familiar with how different i/o
+// routines behave on different platforms concerning line endings.
 struct comm_logger {
-  std::size_t msg_id_ = 0;
-  bool file_open_ = false;
-  std::FILE *cur_file_;
-
+public:
   ~comm_logger();
-  void open(std::string suffix);
   void open_in();
   void open_out();
   void close();
   void write(const void *buf, std::size_t size);
+
+private:
+  std::size_t msg_id_ = 0;
+  bool file_open_ = false;
+  std::FILE *cur_file_;
+  void open(std::string suffix);
 };
 
 class stdio_transporter {
