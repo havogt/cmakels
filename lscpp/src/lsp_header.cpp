@@ -11,77 +11,70 @@ constexpr char char_lf = char(0x0A);
 constexpr char char_cr = char(0x0D);
 } // namespace
 
-// TODO clean this ugly piece
 lsp_header parse_header(transporter &t) {
-  char content_length[17];
-  for (size_t i = 0; i < 16; ++i) {
-    content_length[i] = t.read_char();
-  }
-  content_length[16] = '\0';
-  if (std::strcmp(content_length, "Content-Length: ")) {
-    std::string msg;
-    msg.append(content_length, 16);
-    LOG_F(ERROR, "Failed parsing header, got Content-Length: '%s'",
-          msg.c_str());
-    return {-1};
+  int content_length;
+  if (auto line = t.read_line();
+      line.substr(0, 16).compare("Content-Length: ") == 0) {
+    content_length = std::stoi(line.substr(16, std::string::npos));
+  } else {
+    LOG_F(ERROR,
+          "Failed parsing header, got '%s' instead of 'Content-Length: '",
+          line.substr(0, 16).c_str());
+    return {-1}; // TODO return a proper error on failure.
   }
 
-  const int max_length = 16;
-  char size_buffer[max_length];
-  int pos = 0;
-  bool cr_reached = false;
-  bool valid_header = false;
-  for (int i = 0; i < max_length - 2; ++i) {
-    size_buffer[pos] = t.read_char();
-// TODO the transporter has to deal with the line endings
-// Probably replace read_char by read_line
-#ifdef _WIN32
-    if (size_buffer[pos] == char_lf) {
-      valid_header = true;
-      ++pos;
-      break;
-    }
-#else
-    if (cr_reached) {
-      if (size_buffer[pos] == char_lf) {
-        valid_header = true;
-      }
-      break;
-    }
-    if (size_buffer[pos] == char_cr)
-      cr_reached = true;
-#endif
-    ++pos;
-    LOG_F(INFO, "Size buffer: %c", size_buffer[pos - 1]);
-  }
-  if (valid_header) {
-    LOG_F(INFO, "valid_header");
-    size_buffer[pos - 1] = '\0';
+  if (auto line = t.read_line(); line.size() == 0) // a new line
+    return {content_length};                       // valid header
 
-    char last_crlf[2];
-#ifdef _WIN32
-    last_crlf[0] = t.read_char();
-    if (last_crlf[0] == char_lf) {
-      LOG_F(INFO, "Returning Content-Length: %s", size_buffer);
-      return {atoi(size_buffer)};
-    } else {
-      valid_header = false;
-    }
-#else
-    last_crlf[0] = t.read_char();
-    last_crlf[1] = t.read_char();
+  // // TODO the transporter has to deal with the line endings
+  // // Probably replace read_char by read_line
+  // #ifdef _WIN32
+  //   if (size_buffer[pos] == char_lf) {
+  //     valid_header = true;
+  //     ++pos;
+  //     break;
+  //   }
+  // #else
+  //   if (cr_reached) {
+  //     if (size_buffer[pos] == char_lf) {
+  //       valid_header = true;
+  //     }
+  //     break;
+  //   }
+  //   if (size_buffer[pos] == char_cr)
+  //     cr_reached = true;
+  // #endif
+  //   ++pos;
+  //   LOG_F(INFO, "Size buffer: %c", size_buffer[pos - 1]);
+  // }
+  // if (valid_header) {
+  //   LOG_F(INFO, "valid_header");
+  //   size_buffer[pos - 1] = '\0';
 
-    if (last_crlf[0] == char_cr && last_crlf[1] == char_lf) {
-      LOG_F(INFO, "Returning Content-Length: %s", size_buffer);
-      return {atoi(size_buffer)};
-    } else {
-      valid_header = false;
-    }
-#endif
-  }
+  //   char last_crlf[2];
+  // #ifdef _WIN32
+  //   last_crlf[0] = t.read_char();
+  //   if (last_crlf[0] == char_lf) {
+  //     LOG_F(INFO, "Returning Content-Length: %s", size_buffer);
+  //     return {atoi(size_buffer)};
+  //   } else {
+  //     valid_header = false;
+  //   }
+  // #else
+  //   last_crlf[0] = t.read_char();
+  //   last_crlf[1] = t.read_char();
+
+  //   if (last_crlf[0] == char_cr && last_crlf[1] == char_lf) {
+  //     LOG_F(INFO, "Returning Content-Length: %s", size_buffer);
+  //     return {atoi(size_buffer)};
+  //   } else {
+  //     valid_header = false;
+  //   }
+  // #endif
+  // }
   LOG_F(ERROR, "Failed parsing header!");
   return {-1};
-}
+} // namespace lscpp
 
 lsp_header parse_header(transporter &&t) { return parse_header(t); }
 

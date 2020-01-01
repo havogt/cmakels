@@ -124,6 +124,27 @@ void stdio_transporter::write_message(std::string str) {
   log_out_message(comm_logger_, cstr, sizeof_reply);
 }
 
+namespace {
+constexpr char char_lf = char(0x0A);
+constexpr char char_cr = char(0x0D);
+} // namespace
+
+std::string stdio_transporter::read_line() {
+  char c = read_char();
+  std::size_t pos = 0;
+  std::string line;
+#ifdef _WIN32
+  while (c != char_lf) {
+    data_.get()[pos] = c;
+    pos++;
+    c = read_char();
+  }
+  line.append(data_.get(), pos);
+#else
+#endif
+  return line;
+}
+
 #undef stdin_fileno
 #undef stdout_fileno
 
