@@ -10,6 +10,7 @@ class transporter {
     virtual ~iface(){};
     virtual std::string read_line() = 0;
     virtual std::string read_message(std::size_t length) = 0;
+    virtual void write_line(std::string str) = 0;
     virtual void write_message(std::string str) = 0;
   };
 
@@ -20,6 +21,7 @@ class transporter {
     std::string read_message(std::size_t length) override {
       return t_.read_message(length);
     };
+    void write_line(std::string str) override { t_.write_line(str); };
     void write_message(std::string str) override { t_.write_message(str); };
   };
 
@@ -32,6 +34,7 @@ public:
   std::string read_message(std::size_t length) {
     return impl_->read_message(length);
   }
+  void write_line(std::string str) { return impl_->write_line(str); }
   void write_message(std::string str) { return impl_->write_message(str); }
 };
 

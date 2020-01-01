@@ -41,9 +41,8 @@ void comm_logger::open_in() {
     open(".in");
 }
 void comm_logger::open_out() {
-  if (file_open_)
-    close();
-  open(".out");
+  if (!file_open_)
+    open(".out");
 }
 
 void comm_logger::close() {
@@ -74,11 +73,12 @@ void log_in_message(std::optional<comm_logger> &logger, const void *buf,
 }
 
 void log_out_message(std::optional<comm_logger> &logger, const void *buf,
-                     std::size_t size) {
+                     std::size_t size, bool close_file) {
   if (logger) {
     logger->open_out();
     logger->write(buf, size);
-    logger->close();
+    if (close_file)
+      logger->close();
   }
 }
 } // namespace
@@ -117,12 +117,24 @@ std::string stdio_transporter::read_message(std::size_t length) {
   return res;
 }
 
-void stdio_transporter::write_message(std::string str) {
+void stdio_transporter::write_line(std::string str) {
+  // TODO fix comm logger
+#ifdef _WIN32
+  write_message_impl(str + "\n");
+#else
+  write_message_impl(str + "\r\n");
+#endif
+}
+
+void stdio_transporter::write_message_impl(std::string str, bool close_file) {
   const char *cstr = str.c_str();
   std::size_t sizeof_reply = str.size();
   ::write(stdout_fileno, cstr, sizeof_reply);
+  log_out_message(comm_logger_, cstr, sizeof_reply, close_file);
+}
 
-  log_out_message(comm_logger_, cstr, sizeof_reply);
+void stdio_transporter::write_message(std::string str) {
+  write_message_impl(str, true);
 }
 
 namespace {

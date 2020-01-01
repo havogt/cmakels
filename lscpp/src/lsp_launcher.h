@@ -13,17 +13,14 @@
 
 namespace lscpp {
 
-inline std::string add_lsp_header(std::string content) {
-  std::stringstream reply;
-  reply << "Content-Length: ";
-  reply << content.size();
-#ifdef _WIN32
-  reply << "\n\n";
-#else
-  reply << "\r\n\r\n";
-#endif
-  reply << content;
-  return reply.str();
+inline void write_lsp_message(transporter &t, std::string const &content) {
+  std::stringstream content_length;
+  content_length << "Content-Length: ";
+  content_length << content.size();
+  t.write_line(content_length.str());
+  t.write_line("");
+
+  t.write_message(content);
 }
 
 struct launch_config {
@@ -53,7 +50,7 @@ void launch(lsp_server &&server, launch_config config = {},
       auto result = message_handler.handle_message(server, msg);
       if (result) {
         LOG_F(INFO, "Sending response: '%s'", (*result).c_str());
-        transporter_.write_message(add_lsp_header(*result));
+        write_lsp_message(transporter_, *result);
       }
     }
   });
