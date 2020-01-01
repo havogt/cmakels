@@ -34,12 +34,12 @@ private:
   std::unique_ptr<char[]> data_{new char[size_]};
 
   void reserve(std::size_t size);
+  char read_char();
 
 public:
   stdio_transporter() = default;
   stdio_transporter(bool log_communication);
 
-  char read_char();
   std::string read_line();
   std::string read_message(std::size_t length);
   void write_message(std::string str);

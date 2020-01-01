@@ -93,7 +93,8 @@ void stdio_transporter::reserve(std::size_t size) {
     reallocate = true;
     size_ *= 2;
   }
-  data_.reset(new char[size_]);
+  if (reallocate)
+    data_.reset(new char[size_]);
 }
 
 char stdio_transporter::read_char() {
@@ -135,12 +136,25 @@ std::string stdio_transporter::read_line() {
   std::string line;
 #ifdef _WIN32
   while (c != char_lf) {
+    reserve(pos);
     data_.get()[pos] = c;
     pos++;
     c = read_char();
   }
   line.append(data_.get(), pos);
 #else
+  while (c != char_cr) {
+    reserve(pos);
+    data_.get()[pos] = c;
+    pos++;
+    c = read_char();
+  }
+  c = read_char();
+  if (c == char_lf) {
+    line.append(data_.get(), pos);
+  } else {
+    // TODO error
+  }
 #endif
   return line;
 }
