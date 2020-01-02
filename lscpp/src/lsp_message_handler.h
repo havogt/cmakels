@@ -15,7 +15,8 @@ protocol::InitializeParams parse_initialize_params(nlohmann::json const &j) {
 
 class lsp_message_handler {
   bool initialized_ = false;
-  bool ready_ = false; // after received initialize
+  bool ready_ = false;    // after received initialize
+  bool shutdown_ = false; // received shutdown request, next is an exit
 
 public:
   template <typename Result>
@@ -65,8 +66,21 @@ public:
         // auto json_result = make_response_message(j["id"], init_result);
         // return json_result.dump();
       }
+    } else if (shutdown_) {
+      if (j["method"] == "exit") {
+        exit(0); // TODO give the user the chance to do something, i.e. call a
+                 // virtual method
+      } else {
+        // TODO: send invalid request
+        exit(1);
+      }
     } else {
-      if (j["method"] == "textDocument/hover") {
+      if (j["method"] == "shutdown") {
+        shutdown_ = true;
+        nlohmann::json j_null;
+        auto json_result = make_response_message(j["id"], j_null);
+        return json_result.dump();
+      } else if (j["method"] == "textDocument/hover") {
         LOG_F(INFO, "Received textDocument/hover");
         protocol::TextDocumentPositionParams params;
         j.at("params").get_to(params);

@@ -13,28 +13,28 @@
 
 namespace lscpp {
 
-inline std::string add_lsp_header(std::string content) {
-  std::stringstream reply;
-  reply << "Content-Length: ";
-  reply << content.size();
-#ifdef _WIN32
-  reply << "\n\n";
-#else
-  reply << "\r\n\r\n";
-#endif
-  reply << content;
-  return reply.str();
+inline void write_lsp_message(transporter &t, std::string const &content) {
+  std::stringstream content_length;
+  content_length << "Content-Length: ";
+  content_length << content.size();
+  t.write_line(content_length.str());
+  t.write_line("");
+
+  t.write_message(content);
 }
 
+struct launch_config {
+  int startup_delay = 0; // in seconds
+};
+
 template <class MessageHandler = lsp_message_handler>
-void launch(lsp_server &&server,
+void launch(lsp_server &&server, launch_config config = {},
             transporter &&transporter_ = stdio_transporter{},
             MessageHandler &&message_handler = {}) {
 
-#ifndef NDEBUG // TODO make this a start-up flag
-  using namespace std::chrono_literals;
-  std::this_thread::sleep_for(15s);
-#endif
+  // Allows to attach a debugger,
+  // before the language server starts to communicate with the client.
+  std::this_thread::sleep_for(std::chrono::seconds(config.startup_delay));
 
   auto rcv = std::async(std::launch::async, [&]() {
     while (true) {
@@ -42,7 +42,6 @@ void launch(lsp_server &&server,
       LOG_F(INFO, "content-length: '%d'", header.content_length);
       if (header.content_length <
           0) { // TODO parse header should not use -1 to report an error
-        LOG_F(INFO, "content-length: '%d'", header.content_length);
         continue;
       }
       auto msg = transporter_.read_message(header.content_length);
@@ -51,7 +50,7 @@ void launch(lsp_server &&server,
       auto result = message_handler.handle_message(server, msg);
       if (result) {
         LOG_F(INFO, "Sending response: '%s'", (*result).c_str());
-        transporter_.write_message(add_lsp_header(*result));
+        write_lsp_message(transporter_, *result);
       }
     }
   });

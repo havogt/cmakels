@@ -1,0 +1,22 @@
+name: CI-win-lscpp-only
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: configure
+      run: |
+        cd lscpp
+        mkdir build
+        cd build
+        cmake ..
+    - name: build
+      run: cmake --build lscpp/build --parallel 2
+    - name: test
+      run: |
+        cd lscpp/build
+        ctest -C Debug --output-on-failure

@@ -144,5 +144,11 @@ int main(int argc, char *argv[]) {
   loguru::init(argc, argv);
   loguru::add_file("sample_server.log", loguru::Append, loguru::Verbosity_MAX);
 
-  lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]});
+  lscpp::launch_config config;
+#ifndef NDEBUG
+  config.startup_delay = 15;
+#endif
+
+  lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]}, config,
+                lscpp::stdio_transporter{false});
 }
