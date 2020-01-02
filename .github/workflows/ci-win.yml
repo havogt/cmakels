@@ -1,4 +1,4 @@
-name: CI-win
+name: CI-win-no-test_listfile_x
 
 on: [push]
 
@@ -18,4 +18,4 @@ jobs:
     - name: test
       run: | 
         cd build
-        ctest -C Debug --output-on-failure
+        ctest -C Debug -E test_listfile_.* --output-on-failure
