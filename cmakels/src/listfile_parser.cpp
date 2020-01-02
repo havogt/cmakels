@@ -1,5 +1,6 @@
 #include "listfile_parser.hpp"
 
+#include "support/filesystem.hpp"
 #include <cmMessenger.h>
 #include <fstream>
 
@@ -8,10 +9,10 @@ namespace cmake_query {
 std::optional<cmListFile>
 parse_listfile(std::string const
                    &buffer) { // TODO be able to parse from file or from buffer
-  std::string tmp_file = "/tmp/buff.cmake"; // TODO write to a better location!
+  auto tmp_file = fs::temp_directory_path() / "buff.cmake";
   {
-    std::ofstream out(tmp_file.c_str()); // TODO use the in-memory lexer instead
-                                         // (probably a bit of work)
+    std::ofstream out(tmp_file.string()); // TODO use the in-memory lexer
+                                          // instead (probably a bit of work)
     out << buffer;
   }
 
@@ -22,7 +23,7 @@ parse_listfile(std::string const
     // cmStateSnapshot snapshot(state.get());
     cmListFileBacktrace lfbt{/* snapshot */};
 
-    if (lf.ParseFile(tmp_file.c_str(), messenger.get(), lfbt))
+    if (lf.ParseFile(tmp_file.string().c_str(), messenger.get(), lfbt))
       return lf;
   }
   return std::nullopt;
