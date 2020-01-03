@@ -13,7 +13,10 @@ target_include_directories(cmake_query
     )
 target_include_directories(cmake_query PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(cmake_query PRIVATE CMakeLib)
-target_link_libraries(cmake_query PRIVATE stdc++fs)
+# TODO actually need to check if libstdc++ or libc++
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+    target_link_libraries(cmake_query PRIVATE stdc++fs)
+endif()
 target_compile_features(cmake_query PUBLIC cxx_std_17) # PUBLIC: header contains optional... should be ensured by subprojects???
 
 
