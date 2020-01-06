@@ -9,7 +9,18 @@ include(CTest)
 
 add_subdirectory(external)
 
-add_subdirectory(../lscpp ${CMAKE_CURRENT_BINARY_DIR}/lscpp)
+include(FetchContent)
+FetchContent_Declare(
+	lscpp
+	DOWNLOAD_COMMAND ""
+	SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../lscpp
+)
+FetchContent_GetProperties(lscpp)
+if(NOT lscpp_POPULATED)
+    FetchContent_Populate(lscpp)
+    add_subdirectory(${lscpp_SOURCE_DIR} ${lscpp_BINARY_DIR})
+endif()
+
 add_subdirectory(src)
 
 if(BUILD_TESTING)
