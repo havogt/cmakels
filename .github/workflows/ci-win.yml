@@ -12,9 +12,9 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake -G Ninja ..
       - name: build
-        run: cmake -G Ninja --build build --parallel 2
+        run: cmake --build build --parallel 2
       - name: test
         run: |
           cd build
