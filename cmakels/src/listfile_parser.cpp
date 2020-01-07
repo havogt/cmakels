@@ -2,6 +2,7 @@
 
 #include "support/filesystem.hpp"
 #include <cmMessenger.h>
+#include <filesystem>
 #include <fstream>
 
 namespace cmake_query {
@@ -9,7 +10,8 @@ namespace cmake_query {
 std::optional<cmListFile>
 parse_listfile(std::string const
                    &buffer) { // TODO be able to parse from file or from buffer
-  auto tmp_file = fs::temp_directory_path() / "buff.cmake";
+  std::string tmp_filename = std::to_string(std::hash<std ::string>{}(buffer));
+  auto tmp_file = fs::temp_directory_path() / (tmp_filename + ".cmake");
   {
     std::ofstream out(tmp_file.string()); // TODO use the in-memory lexer
                                           // instead (probably a bit of work)
@@ -26,6 +28,8 @@ parse_listfile(std::string const
     if (lf.ParseFile(tmp_file.string().c_str(), messenger.get(), lfbt))
       return lf;
   }
+
+  fs::remove(tmp_file);
   return std::nullopt;
 }
 
