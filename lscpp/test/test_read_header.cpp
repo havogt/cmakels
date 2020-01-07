@@ -1,5 +1,5 @@
-#include "../src/lsp_header.h"
-#include "../src/transporter.h"
+#include "lscpp/lsp_header.h"
+#include "lscpp/transporter.h"
 
 #include <gtest/gtest.h>
 

@@ -1,8 +1,8 @@
 #include <cstring>
 #include <loguru.hpp>
 
-#include "lsp_header.h"
-#include "transporter.h"
+#include "lscpp/lsp_header.h"
+#include "lscpp/transporter.h"
 
 namespace lscpp {
 

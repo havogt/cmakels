@@ -1,7 +1,7 @@
 #include <loguru.hpp>
 
-#include <lsp_launcher.h>
-#include <lsp_server.h>
+#include <lscpp/lsp_launcher.h>
+#include <lscpp/lsp_server.h>
 
 namespace lscpp {
 
