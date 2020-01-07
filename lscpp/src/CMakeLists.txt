@@ -1,6 +1,7 @@
 add_library(lscpp
     lsp_header.cpp
     lsp_message_handler.cpp
+    lsp_launcher.cpp
     stdio_transporter.cpp
     )
 target_link_libraries(lscpp PUBLIC loguru) #TODO make private

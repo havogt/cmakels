@@ -1,7 +1,8 @@
 #pragma once
 #include <optional>
 #include <string>
-#include "transporter.h"
+
+#include <lscpp/transporter.h>
 
 namespace lscpp {
 struct lsp_header {
@@ -9,6 +10,6 @@ struct lsp_header {
   std::optional<std::string> content_type;
 };
 
-lsp_header parse_header(transporter& t);
-lsp_header parse_header(transporter&& t);
-}  // namespace lscpp
+lsp_header parse_header(transporter &t);
+lsp_header parse_header(transporter &&t);
+} // namespace lscpp

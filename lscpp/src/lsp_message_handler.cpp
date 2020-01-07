@@ -1,4 +1,4 @@
-#include <lscpp/lsp_message_handler.h>
+#include "lsp_message_handler.h"
 
 #include "../external/json.hpp"
 #include "protocol_serializer/serializer.h"
