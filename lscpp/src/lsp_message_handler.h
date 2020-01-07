@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lsp_server.h"
+#include <lscpp/lsp_server.h>
 
 namespace lscpp {
 
