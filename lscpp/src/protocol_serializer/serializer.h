@@ -3,19 +3,19 @@
 #include "../../external/json.hpp"
 #include <loguru.hpp>
 
-#include "../protocol/CompletionItem.h"
-#include "../protocol/DidChangeTextDocumentParams.h"
-#include "../protocol/DidCloseTextDocumentParams.h"
-#include "../protocol/DidOpenTextDocumentParams.h"
-#include "../protocol/DidSaveTextDocumentParams.h"
-#include "../protocol/Hover.h"
-#include "../protocol/InitializeParams.h"
-#include "../protocol/InitializeResult.h"
-#include "../protocol/Location.h"
-#include "../protocol/Range.h"
-#include "../protocol/TextDocumentIdentifier.h"
-#include "../protocol/TextDocumentItem.h"
-#include "../protocol/TextDocumentPositionParams.h"
+#include "lscpp/protocol/CompletionItem.h"
+#include "lscpp/protocol/DidChangeTextDocumentParams.h"
+#include "lscpp/protocol/DidCloseTextDocumentParams.h"
+#include "lscpp/protocol/DidOpenTextDocumentParams.h"
+#include "lscpp/protocol/DidSaveTextDocumentParams.h"
+#include "lscpp/protocol/Hover.h"
+#include "lscpp/protocol/InitializeParams.h"
+#include "lscpp/protocol/InitializeResult.h"
+#include "lscpp/protocol/Location.h"
+#include "lscpp/protocol/Range.h"
+#include "lscpp/protocol/TextDocumentIdentifier.h"
+#include "lscpp/protocol/TextDocumentItem.h"
+#include "lscpp/protocol/TextDocumentPositionParams.h"
 
 // serialization for std::variant
 namespace nlohmann {

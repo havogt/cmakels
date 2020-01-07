@@ -1,11 +1,10 @@
-#include "protocol/TextDocumentPositionParams.h"
 #pragma once
 
 #include "../external/json.hpp"
 #include "lsp_server.h"
 #include <loguru.hpp>
 
-#include "protocol_serializer/serializer.h"
+#include "../../src/protocol_serializer/serializer.h" // TODO must move this file to src for proper dependency
 
 namespace lscpp {
 
@@ -19,6 +18,7 @@ class lsp_message_handler {
   bool shutdown_ = false; // received shutdown request, next is an exit
 
 public:
+  // TODO private?
   template <typename Result>
   nlohmann::json make_response_message(int id, Result const &result) {
     // nlohmann::json j_result = result;

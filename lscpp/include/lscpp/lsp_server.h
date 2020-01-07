@@ -30,6 +30,8 @@ public:
   virtual void didChange(protocol::DidChangeTextDocumentParams params) = 0;
   virtual void didClose(protocol::DidCloseTextDocumentParams params) = 0;
   virtual void didSave(protocol::DidSaveTextDocumentParams params) = 0;
+
+  virtual ~TextDocumentService(){};
 };
 
 class lsp_server {

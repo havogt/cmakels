@@ -5,8 +5,8 @@
 #include <cmListFileCache.h> //TODO remove dependency
 
 #include "support/filesystem.hpp"
-#include <lsp_launcher.h>
-#include <lsp_server.h>
+#include <lscpp/lsp_launcher.h>
+#include <lscpp/lsp_server.h>
 #include <map>
 #include <regex>
 #include <stdexcept>
