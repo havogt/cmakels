@@ -30,3 +30,5 @@ endforeach()
 if(BUILD_PLAYGROUND)
     add_subdirectory(playground)
 endif()
+
+add_subdirectory(debugging)
