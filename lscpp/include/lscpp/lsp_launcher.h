@@ -38,6 +38,11 @@ struct launch_config {
   logger_config logger;
 };
 
+/**
+ * @param server implementation of a language server
+ * @param config launch configuration
+ * @param transporter see transporter concept
+ */
 void launch(lsp_server &&server,       //
             launch_config config = {}, //
             transporter &&transporter_ = stdio_transporter{});
