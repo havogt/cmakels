@@ -1,3 +1,8 @@
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <loguru.hpp>
 
 #include <lscpp/lsp_launcher.h>

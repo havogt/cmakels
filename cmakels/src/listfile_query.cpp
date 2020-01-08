@@ -1,3 +1,8 @@
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "listfile_query.hpp"
 #include "listfile_parser.hpp"
 

@@ -1,3 +1,8 @@
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "lsp_message_handler.h"
 
 #include "../external/json.hpp"

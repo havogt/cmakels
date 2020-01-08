@@ -1,3 +1,8 @@
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include "cmake_query.hpp" // TODO refactor
 #include "listfile_parser.hpp"
 #include "listfile_query.hpp"
