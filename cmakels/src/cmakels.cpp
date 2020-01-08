@@ -1,7 +1,6 @@
 #include "cmake_query.hpp" // TODO refactor
 #include "listfile_parser.hpp"
 #include "listfile_query.hpp"
-#include "loguru.hpp"
 #include <cmListFileCache.h> //TODO remove dependency
 
 #include "support/filesystem.hpp"
@@ -109,7 +108,6 @@ public:
 
   std::variant<std::vector<protocol::CompletionItem>>
   completion(protocol::CompletionParams params) override {
-    LOG_F(INFO, "In sample_server2: completion");
     return std::vector<protocol::CompletionItem>{
         {"bla" + params.textDocument.uri}};
   }
@@ -139,15 +137,11 @@ std::string uri_to_filename(std::string const &uri) {
 }
 
 int main(int argc, char *argv[]) {
-  loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
-  loguru::g_colorlogtostderr = false;
-  loguru::init(argc, argv);
-  loguru::add_file("sample_server.log", loguru::Append, loguru::Verbosity_MAX);
-
   lscpp::launch_config config;
 #ifndef NDEBUG
   config.startup_delay = 15;
 #endif
+  config.logger = {lscpp::Verbosity_MAX, "cmakels.log"};
 
   lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]}, config,
                 lscpp::stdio_transporter{false});

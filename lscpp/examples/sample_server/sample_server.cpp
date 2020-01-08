@@ -64,12 +64,8 @@ public:
 } // namespace lscpp
 
 int main(int argc, char *argv[]) {
-  loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
-  loguru::g_colorlogtostderr = false;
-  loguru::init(argc, argv);
-  loguru::add_file("sample_server.log", loguru::Truncate,
-                   loguru::Verbosity_MAX);
-
-  lscpp::launch(lscpp::my_lsp_server{}, lscpp::launch_config{},
-                lscpp::stdio_transporter{false});
+  lscpp::launch(
+      lscpp::my_lsp_server{},
+      lscpp::launch_config{0, {lscpp::Verbosity_MAX, "sample_server.log"}},
+      lscpp::stdio_transporter{false});
 }

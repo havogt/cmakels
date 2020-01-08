@@ -32,6 +32,13 @@ void launch(lsp_server &&server, launch_config config,
   // templated launch (or duplicate the launch as long as it is simple)
   lsp_message_handler message_handler{};
 
+  // setup logger
+  loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
+  loguru::g_colorlogtostderr = false;
+  if (config.logger.filename.size() > 0)
+    loguru::add_file(config.logger.filename.c_str(), loguru::Truncate,
+                     config.logger.verbosity);
+
   auto rcv = std::async(std::launch::async, [&]() {
     while (true) {
       auto header = parse_header(transporter_);
