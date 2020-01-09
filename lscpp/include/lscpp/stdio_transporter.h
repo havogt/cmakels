@@ -27,6 +27,9 @@ private:
   void open(std::string suffix);
 };
 
+/**
+ * Transporter communicating via stdin/stdout file descriptors.
+ */
 class stdio_transporter {
 private:
   std::optional<comm_logger> comm_logger_;
