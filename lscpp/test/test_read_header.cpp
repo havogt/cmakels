@@ -39,8 +39,7 @@ public:
     return res;
   }
 
-  void write_line(std::string) {}
-  void write_message(std::string) {}
+  void write_message(std::string, bool) {}
 };
 
 TEST(parse_header, simple) {

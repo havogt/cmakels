@@ -20,6 +20,12 @@
 
 namespace lscpp {
 
+/**
+ * Language server implementations need to implement the required virtual
+ * methods. The respective lsp rpc method names are "textdocument/<methodname>".
+ * E.g. a "textdocument/didOpen" notification send by the client will call the
+ * didOpen() method in TextDocumentService.
+ */
 class TextDocumentService {
 public:
   virtual protocol::Hover
@@ -39,14 +45,21 @@ public:
   virtual ~TextDocumentService(){};
 };
 
+/**
+ * Language server implementations need to implement the required virtual
+ * methods.
+ * See
+ * https://microsoft.github.io/language-server-protocol/specifications/specification-3-14/
+ * and lscpp/protocol for the parameter and result specification.
+ */
 class lsp_server {
 public:
   virtual protocol::InitializeResult
-  initialize(protocol ::InitializeParams const &params) = 0;
+  initialize(protocol::InitializeParams const &params) = 0;
 
   virtual TextDocumentService &getTextDocumentService() = 0;
 
-  virtual ~lsp_server() {}
+  virtual ~lsp_server(){};
 };
 
 } // namespace lscpp

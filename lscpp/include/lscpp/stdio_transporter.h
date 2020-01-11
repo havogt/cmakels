@@ -32,6 +32,9 @@ private:
   void open(std::string suffix);
 };
 
+/**
+ * Transporter communicating via stdin/stdout file descriptors.
+ */
 class stdio_transporter {
 private:
   std::optional<comm_logger> comm_logger_;
@@ -49,8 +52,7 @@ public:
 
   std::string read_line();
   std::string read_message(std::size_t length);
-  void write_line(std::string str);
-  void write_message(std::string str);
+  void write_message(std::string const &str, bool newline);
 };
 
 } // namespace lscpp

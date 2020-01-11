@@ -20,8 +20,8 @@ void write_lsp_message(transporter &t, std::string const &content) {
   std::stringstream content_length;
   content_length << "Content-Length: ";
   content_length << content.size();
-  t.write_line(content_length.str());
-  t.write_line("");
+  t.write_message(content_length.str(), true);
+  t.write_message("", true);
 
   t.write_message(content);
 }

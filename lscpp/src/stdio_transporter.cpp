@@ -122,15 +122,6 @@ std::string stdio_transporter::read_message(std::size_t length) {
   return res;
 }
 
-void stdio_transporter::write_line(std::string str) {
-  // TODO fix comm logger
-#ifdef _WIN32
-  write_message_impl(str + "\n");
-#else
-  write_message_impl(str + "\r\n");
-#endif
-}
-
 void stdio_transporter::write_message_impl(std::string str, bool close_file) {
   const char *cstr = str.c_str();
   std::size_t sizeof_reply = str.size();
@@ -138,8 +129,15 @@ void stdio_transporter::write_message_impl(std::string str, bool close_file) {
   log_out_message(comm_logger_, cstr, sizeof_reply, close_file);
 }
 
-void stdio_transporter::write_message(std::string str) {
-  write_message_impl(str, true);
+void stdio_transporter::write_message(std::string const &str, bool newline) {
+  if (newline) {
+#ifdef _WIN32
+    write_message_impl(str + "\n");
+#else
+    write_message_impl(str + "\r\n");
+#endif
+  } else
+    write_message_impl(str, true);
 }
 
 namespace {

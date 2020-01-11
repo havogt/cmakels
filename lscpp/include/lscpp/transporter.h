@@ -10,13 +10,26 @@
 
 namespace lscpp {
 
+/**
+ * Transporter concept
+ * A transporter needs to provide the following member functions
+ * - read_line(): reads a line, terminated by \r\n.
+ *   (\r\n is not part of the return string)
+ * - read_message(std::size_t length): reads a string of size `length`.
+ *   As the size of the message is known the read can be implemented more
+ *   efficiently than read_line()
+ * - write_message(std::string const&, bool newline): writes the string,
+     adds line ending (\r\n) if `newline == true`.
+ *
+ * Transporters are responsible for dealing with line endings (which might be
+ * platform specific).
+ */
 class transporter {
   struct iface {
     virtual ~iface(){};
     virtual std::string read_line() = 0;
     virtual std::string read_message(std::size_t length) = 0;
-    virtual void write_line(std::string str) = 0;
-    virtual void write_message(std::string str) = 0;
+    virtual void write_message(std::string const &str, bool newline) = 0;
   };
 
   template <class Transporter> struct impl : iface {
@@ -26,8 +39,9 @@ class transporter {
     std::string read_message(std::size_t length) override {
       return t_.read_message(length);
     };
-    void write_line(std::string str) override { t_.write_line(str); };
-    void write_message(std::string str) override { t_.write_message(str); };
+    void write_message(std::string const &str, bool newline) override {
+      t_.write_message(str, newline);
+    };
   };
 
   std::unique_ptr<iface> impl_;
@@ -39,8 +53,9 @@ public:
   std::string read_message(std::size_t length) {
     return impl_->read_message(length);
   }
-  void write_line(std::string str) { return impl_->write_line(str); }
-  void write_message(std::string str) { return impl_->write_message(str); }
+  void write_message(std::string const &str, bool newline = false) {
+    return impl_->write_message(str, newline);
+  }
 };
 
 } // namespace lscpp
