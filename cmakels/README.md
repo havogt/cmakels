@@ -11,7 +11,7 @@ So I decided to play with a language server for CMake.
 My idea was to implement the language server in C++ to be able to easily access CMake information
 by interfacing with CMake's implementation.
 
-Since I couldn't find an existing [LSP]() implementation in C++ which was easy to re-use and I found it very interesting to implement a language server from scratch,
+Since I couldn't find an existing [LSP](https://microsoft.github.io/language-server-protocol/specifications/specification-current) implementation in C++ which was easy to re-use and I found it very interesting to implement a language server from scratch,
 I started this project as 2 components:
 [lscpp](../lscpp/README.md), LSP implementation in C++ (similar to [lsp4j](https://github.com/eclipse/lsp4j) for Java) and cmakels building on top of it.
 
