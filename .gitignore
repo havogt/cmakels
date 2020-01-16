@@ -2,5 +2,6 @@ install
 .vscode
 *.log
 *.bak
+compile_commands.json
 build
 
