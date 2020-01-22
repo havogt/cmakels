@@ -1,7 +1,7 @@
 install
-.vscode
+/.vscode
 *.log
 *.bak
 compile_commands.json
 build
-
+.cmakels
