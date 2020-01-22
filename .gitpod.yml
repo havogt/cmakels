@@ -11,7 +11,7 @@ vscode:
 
 tasks:
   - init: >
-      mv .gitpod/.vscode .
+      mv .gitpod/.vscode . &&
       mkdir build &&
       cd build &&
       cmake -D CMAKE_EXPORT_COMPILE_COMMANDS=ON .. &&
