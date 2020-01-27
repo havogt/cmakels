@@ -35,10 +35,12 @@ cmake_query::cmake_query(std::string root_dir, std::string build_dir)
   fs::path cmake_exe_in_install_tree =
       cmakels_dir.parent_path().parent_path() / "bin/cmake";
 
+  // string().c_str() to convert path to const char* on win, see
+  // https://stackoverflow.com/a/54109263/5085250
   if (fs::exists(cmake_exe_in_build_tree))
-    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.c_str());
+    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.string().c_str());
   else if (fs::exists(cmake_exe_in_install_tree))
-    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.c_str());
+    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.string().c_str());
   else
     throw std::runtime_error("Couldn't find CMake resources.");
 
