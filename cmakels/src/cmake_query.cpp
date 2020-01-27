@@ -7,8 +7,8 @@
 #include "cmState.h"
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
+#include "support/filesystem.hpp"
 #include "support/whereami_wrapper.hpp"
-#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 
