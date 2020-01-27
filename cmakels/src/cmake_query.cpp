@@ -7,7 +7,10 @@
 #include "cmState.h"
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
+#include "support/whereami_wrapper.hpp"
+#include <filesystem>
 #include <iostream>
+#include <stdexcept>
 
 namespace cmake_query {
 
@@ -23,13 +26,21 @@ cmake_query::cmake_query(std::string root_dir, std::string build_dir)
 
   cmSystemTools::InitializeLibUV();
 
-  auto wd = cmSystemTools::GetCurrentWorkingDirectory();
-  cmSystemTools::FindCMakeResources(
-      "/home/vogtha/lsp/experiments/cmakels/"
-      "cmakels/build/code/external/cmake/bin/cmake"); // TODO remove hard-coded
-                                                      // path
-  // cmSystemTools::FindCMakeResources((wd + "/cmakels").c_str());
-  // std::cout << cmSystemTools::GetCMakeCommand().c_str() << std::endl;
+  // TODO the following is a hack for the weird global state that CMake needs to
+  // initialize, probably we should avoid using FindCMakeResources and try to
+  // initialize the relevant parts by hand
+  fs::path cmakels_dir(whereami::getExecutablePath().c_str());
+  fs::path cmake_exe_in_build_tree =
+      cmakels_dir.parent_path().parent_path() / "external/cmake/bin/cmake";
+  fs::path cmake_exe_in_install_tree =
+      cmakels_dir.parent_path().parent_path() / "bin/cmake";
+
+  if (fs::exists(cmake_exe_in_build_tree))
+    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.c_str());
+  else if (fs::exists(cmake_exe_in_install_tree))
+    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.c_str());
+  else
+    throw std::runtime_error("Couldn't find CMake resources.");
 
   my_cmake.SetHomeDirectory(root_dir_.string());
 }
@@ -37,10 +48,13 @@ cmake_query::cmake_query(std::string root_dir, std::string build_dir)
 void cmake_query::configure() {
   fs::path cmake_query_build_dir = root_dir_ / ".cmakels";
   fs::create_directories(cmake_query_build_dir);
-  fs::copy_file(build_dir_ / "CMakeCache.txt",
-                cmake_query_build_dir / "CMakeCache.txt",
-                fs::copy_options::overwrite_existing);
-
+  fs::path cmake_cache_src = build_dir_ / "CMakeCache.txt";
+  if (fs::exists(cmake_cache_src))
+    fs::copy_file(cmake_cache_src, cmake_query_build_dir / "CMakeCache.txt",
+                  fs::copy_options::overwrite_existing);
+  else {
+    std::cerr << "No CMakeCache.txt was found." << std::endl;
+  }
   my_cmake.SetHomeOutputDirectory(cmake_query_build_dir.string());
 
   my_cmake.Run(std::vector<std::string>{}, false, true);

@@ -16,3 +16,5 @@ set(BUILD_TESTING OFF)
 add_subdirectory(cmake)
 set(BUILD_TESTING ${_BUILD_TESTING})
 unset(_BUILD_TESTING)
+
+add_subdirectory(whereami)

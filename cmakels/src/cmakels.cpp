@@ -9,6 +9,8 @@
 #include <cmListFileCache.h> //TODO remove dependency
 
 #include "support/filesystem.hpp"
+#include <cstdint>
+#include <iostream>
 #include <lscpp/lsp_launcher.h>
 #include <lscpp/lsp_server.h>
 #include <map>
@@ -43,14 +45,14 @@ std::string substitute_variables(std::string const &token, std::string uri,
 
 class cmakels : public lscpp::lsp_server, lscpp::TextDocumentService {
 private:
-  std::string root_path;
-  std::string build_directory;
-  std::map<std::string, std::optional<cmListFile>> open_files;
+  std::string root_path_;
+  std::string build_directory_;
+  std::map<std::string, std::optional<cmListFile>> open_files_;
   cmake_query::cmake_query query_;
 
 public:
   cmakels(std::string root_path, std::string build_directory)
-      : root_path{root_path}, build_directory{build_directory},
+      : root_path_{root_path}, build_directory_{build_directory},
         query_(root_path, build_directory) {
     query_.configure();
   }
@@ -74,11 +76,11 @@ public:
 
   protocol::Hover
   hover(protocol::TextDocumentPositionParams position) override {
-    if (!open_files[position.textDocument.uri])
+    if (!open_files_[position.textDocument.uri])
       return {"Parsing Error"};
     try {
       auto result = cmake_query::get_function(
-          *(open_files[position.textDocument.uri]),
+          *(open_files_[position.textDocument.uri]),
           {static_cast<std::size_t>(position.position.line),
            static_cast<std::size_t>(position.position.character)});
       auto ret = substitute_variables(cmake_query::get_selected_token(result),
@@ -95,7 +97,7 @@ public:
   protocol::Location
   definition(protocol::TextDocumentPositionParams position) override {
     auto result = cmake_query::get_function(
-        *(open_files[position.textDocument.uri]),
+        *(open_files_[position.textDocument.uri]),
         {static_cast<std::size_t>(position.position.line),
          static_cast<std::size_t>(position.position.character)});
     if (result.function.Name.Lower.compare("add_subdirectory") == 0) {
@@ -118,18 +120,18 @@ public:
   }
 
   void didOpen(protocol::DidOpenTextDocumentParams params) override {
-    open_files.emplace(
+    open_files_.emplace(
         std::make_pair(params.textDocument.uri,
                        cmake_query::parse_listfile(params.textDocument.text)));
   }
   void didChange(protocol::DidChangeTextDocumentParams params) override {
-    open_files[params.textDocument.uri] = cmake_query::parse_listfile(
+    open_files_[params.textDocument.uri] = cmake_query::parse_listfile(
         params.contentChanges[0].text); // using full sync
     // TODO don't parse everytime: probably save the string and keep a cache
     // and keep a cache for parsed file
   }
   void didClose(protocol::DidCloseTextDocumentParams params) override {
-    open_files.erase(params.textDocument.uri);
+    open_files_.erase(params.textDocument.uri);
   }
 
   void didSave(protocol::DidSaveTextDocumentParams params) override {
@@ -142,12 +144,26 @@ std::string uri_to_filename(std::string const &uri) {
 }
 
 int main(int argc, char *argv[]) {
+  // Redirect std::cout to std::cerr to ensure that  cmake doesn't write to
+  // stdout and messes up with lsp communication.
+  // IMPORTANT: we must never use std::cout for lsp communication!
+  std::cout.rdbuf(std::cerr.rdbuf());
+
   lscpp::launch_config config;
 #ifndef NDEBUG
   config.startup_delay = 15;
 #endif
   config.logger = {lscpp::Verbosity_MAX, "cmakels.log"};
 
-  lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]}, config,
-                lscpp::stdio_transporter{false});
+  if (argc < 3) {
+    std::cerr << "Usage " << argv[0] << " <workspace-dir> <build-dir>\n\n"
+              << "<workspace-dir> - directory containing the root "
+                 "CMakeLists.txt of the project\n"
+              << "<build-dir> - build directory (usually defined by an IDE)"
+              << std::endl;
+    std::exit(1);
+  } else {
+    lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]}, config,
+                  lscpp::stdio_transporter{false});
+  }
 }
