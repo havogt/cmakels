@@ -10,5 +10,6 @@
         "-DCMAKE_INSTALL_PREFIX=/workspace/cmakels/install"
     ],
     "editor.formatOnSave": true,
-    "cmakels.path": "/workspace/cmakels/build/cmakels/src/cmakels"
+    "cmakels.path": "/workspace/cmakels/build/cmakels/src/cmakels",
+    "cmakels.trace.server": "verbose",
 }
