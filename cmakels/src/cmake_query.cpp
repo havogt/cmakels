@@ -10,7 +10,9 @@
 #include "support/filesystem.hpp"
 #include "support/whereami_wrapper.hpp"
 #include <iostream>
+#include <optional>
 #include <stdexcept>
+#include <string>
 
 namespace cmake_query {
 
@@ -73,9 +75,17 @@ cmMakefile *cmake_query::get_makefile(std::string const &uri) {
   return nullptr;
 }
 
-bool cmake_query::is_target(std::string const &target, std::string const &uri) {
+std::optional<location> cmake_query::get_target_info(std::string const &target,
+                                                     std::string const &uri) {
   auto mf = get_makefile(uri);
-  return mf && mf->FindTargetToUse(target);
+  if (mf) {
+    auto tgt = mf->FindTargetToUse(target);
+    if (tgt) {
+      auto top = tgt->GetBacktrace().Top();
+      return location{top.FilePath, top.Line};
+    }
+  }
+  return std::nullopt;
 }
 
 std::string cmake_query::evaluate_variable(std::string const &name,

@@ -19,6 +19,13 @@
 
 using namespace lscpp; // TODO remove
 
+std::string uri_to_filename(std::string const &uri) {
+  return uri.substr(7, std::string::npos);
+}
+std::string filename_to_uri(std::string const &filename) {
+  return "file://" + filename;
+}
+
 std::string substitute_variables(std::string const &token, std::string uri,
                                  cmake_query::cmake_query &query) {
   std::regex var_regex("(\\$\\{(.*?)\\})", std::regex_constants::ECMAScript);
@@ -85,7 +92,8 @@ public:
            static_cast<std::size_t>(position.position.character)});
       auto ret = substitute_variables(cmake_query::get_selected_token(result),
                                       position.textDocument.uri, query_);
-      if (query_.is_target(ret, position.textDocument.uri)) {
+      if (auto target_location =
+              query_.get_target_info(ret, position.textDocument.uri)) {
         ret += " is a target";
       }
       return {ret};
@@ -109,6 +117,15 @@ public:
                "CMakeLists.txt")
                   .string(),
               {{0, 0}, {0, 0}}};
+    }
+    auto evaluated_selected_token =
+        substitute_variables(cmake_query::get_selected_token(result),
+                             position.textDocument.uri, query_);
+    if (auto target_location = query_.get_target_info(
+            evaluated_selected_token, position.textDocument.uri)) {
+      return {filename_to_uri(target_location->filename),
+              {{static_cast<int>(target_location->line - 1), 0},
+               {static_cast<int>(target_location->line - 1), 0}}};
     }
     return {position.textDocument.uri, {{0, 0}, {0, 0}}};
   }
@@ -139,10 +156,6 @@ public:
   }
 };
 
-std::string uri_to_filename(std::string const &uri) {
-  return uri.substr(7, std::string::npos);
-}
-
 int main(int argc, char *argv[]) {
   // Redirect std::cout to std::cerr to ensure that  cmake doesn't write to
   // stdout and messes up with lsp communication.
@@ -151,7 +164,7 @@ int main(int argc, char *argv[]) {
 
   lscpp::launch_config config;
 #ifndef NDEBUG
-  config.startup_delay = 15;
+  config.startup_delay = 0;
 #endif
   config.logger = {lscpp::Verbosity_MAX, "cmakels.log"};
 
