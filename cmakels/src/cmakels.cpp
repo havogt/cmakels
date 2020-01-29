@@ -127,6 +127,25 @@ public:
               {{static_cast<int>(target_location->line - 1), 0},
                {static_cast<int>(target_location->line - 1), 0}}};
     }
+    // heuristic goto file (if a file with exists with the name of the selected
+    // token we go to that file)
+    std::cerr << evaluated_selected_token << std::endl;
+    fs::path maybe_path(evaluated_selected_token);
+    std::cerr << maybe_path.string() << std::endl;
+    if (maybe_path.is_absolute()) {
+      if (fs::is_regular_file(maybe_path)) {
+        return {filename_to_uri(maybe_path.string()), {}};
+      }
+    } else {
+      auto current_source_dir =
+          fs::path{uri_to_filename(position.textDocument.uri)}
+              .remove_filename();
+      auto maybe_absolute_path = current_source_dir / maybe_path;
+      std::cerr << maybe_absolute_path.string() << std::endl;
+      if (fs::is_regular_file(maybe_absolute_path)) {
+        return {filename_to_uri(maybe_absolute_path.string()), {}};
+      }
+    }
     return {position.textDocument.uri, {{0, 0}, {0, 0}}};
   }
 
