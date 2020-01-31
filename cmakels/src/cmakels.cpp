@@ -158,7 +158,8 @@ public:
         fs::path{uri_to_filename(params.textDocument.uri)}.remove_filename();
     for (const auto &entry : fs::directory_iterator(path)) {
       if (entry.is_regular_file())
-        result.push_back(protocol::CompletionItem{entry.path().filename()});
+        result.push_back(
+            protocol::CompletionItem{entry.path().filename().string()});
     }
 
     // all targets in the current mf
