@@ -157,7 +157,7 @@ public:
     auto path =
         fs::path{uri_to_filename(params.textDocument.uri)}.remove_filename();
     for (const auto &entry : fs::directory_iterator(path)) {
-      if (entry.is_regular_file())
+      if (fs::is_regular_file(entry))
         result.push_back(
             protocol::CompletionItem{entry.path().filename().string()});
     }
