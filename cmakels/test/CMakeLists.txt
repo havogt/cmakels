@@ -20,7 +20,9 @@ foreach(file IN LISTS TEST_SOURCES)
     get_filename_component(test_name ${file} NAME_WE)
 
     add_executable(${test_name} ${file})
-    target_link_libraries(${test_name} PRIVATE gtest_main)
+    if(NOT ${file} MATCHES ".*nogtest.*")
+        target_link_libraries(${test_name} PRIVATE gtest_main)
+    endif()
     target_link_libraries(${test_name} PRIVATE cmake_query)
     target_compile_features(${test_name} PUBLIC cxx_std_17)
 
