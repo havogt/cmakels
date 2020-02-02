@@ -13,6 +13,8 @@ class cmMakefile;
 
 namespace cmake_query {
 
+std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir);
+
 struct location {
   std::string filename;
   long line;
@@ -22,7 +24,7 @@ class cmake_query {
 private:
   fs::path root_dir_;
   fs::path build_dir_;
-  cmake my_cmake;
+  std::unique_ptr<cmake> my_cmake;
 
 public:
   cmake_query(std::string root_dir, std::string build_dir);

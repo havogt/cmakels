@@ -14,7 +14,7 @@ if(NOT googletest_POPULATED)
 endif()
 
 
-file(GLOB TEST_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test_*.cpp)
+file(GLOB TEST_SOURCES CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} test_*.cpp)
 
 foreach(file IN LISTS TEST_SOURCES)
     get_filename_component(test_name ${file} NAME_WE)

@@ -16,10 +16,8 @@
 
 namespace cmake_query {
 
-cmake_query::cmake_query(std::string root_dir, std::string build_dir)
-    : root_dir_{root_dir}, build_dir_{root_dir_ / build_dir},
-      my_cmake{cmake::RoleProject, cmState::Project} {
-
+std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir) {
+  auto my_cmake = std::make_unique<cmake>(cmake::RoleProject, cmState::Project);
   cmSystemTools::EnsureStdPipes();
   // cmsys::Encoding::CommandLineArguments encoding_args =
   //     cmsys::Encoding::CommandLineArguments::Main(argc, argv);
@@ -46,8 +44,13 @@ cmake_query::cmake_query(std::string root_dir, std::string build_dir)
   else
     throw std::runtime_error("Couldn't find CMake resources.");
 
-  my_cmake.SetHomeDirectory(root_dir_.string());
+  //   my_cmake->SetHomeDirectory(root_dir.string());
+  return my_cmake;
 }
+
+cmake_query::cmake_query(std::string root_dir, std::string build_dir)
+    : root_dir_{root_dir}, build_dir_{root_dir_ / build_dir},
+      my_cmake{instantiate_cmake(fs::path{root_dir})} {}
 
 void cmake_query::configure() {
   fs::path cmake_query_build_dir = root_dir_ / ".cmakels";
@@ -59,13 +62,13 @@ void cmake_query::configure() {
   else {
     std::cerr << "No CMakeCache.txt was found." << std::endl;
   }
-  my_cmake.SetHomeOutputDirectory(cmake_query_build_dir.string());
+  my_cmake->SetHomeOutputDirectory(cmake_query_build_dir.string());
 
-  my_cmake.Run(std::vector<std::string>{}, false, true);
+  my_cmake->Run(std::vector<std::string>{}, false, true);
 }
 
 cmMakefile *cmake_query::get_makefile(std::string const &uri) {
-  auto mfs = my_cmake.GetGlobalGenerator()->GetMakefiles();
+  auto mfs = my_cmake->GetGlobalGenerator()->GetMakefiles();
   for (auto mf : mfs) {
     if (("file://" + mf->GetListFiles()[0]).compare(uri) ==
         0) { // TODO fix file://
