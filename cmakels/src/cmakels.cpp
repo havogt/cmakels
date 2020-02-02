@@ -151,8 +151,23 @@ public:
 
   std::variant<std::vector<protocol::CompletionItem>>
   completion(protocol::CompletionParams params) override {
-    return std::vector<protocol::CompletionItem>{
-        {"bla" + params.textDocument.uri}};
+    std::vector<protocol::CompletionItem> result;
+
+    // all files in the same directory (non-filtered)
+    auto path =
+        fs::path{uri_to_filename(params.textDocument.uri)}.remove_filename();
+    for (const auto &entry : fs::directory_iterator(path)) {
+      if (fs::is_regular_file(entry))
+        result.push_back(
+            protocol::CompletionItem{entry.path().filename().string()});
+    }
+
+    // all targets in the current mf
+    for (const auto &tgt : query_.get_target_names(params.textDocument.uri)) {
+      result.push_back(protocol::CompletionItem{tgt});
+    }
+
+    return result;
   }
 
   void didOpen(protocol::DidOpenTextDocumentParams params) override {

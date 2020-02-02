@@ -88,6 +88,18 @@ std::optional<location> cmake_query::get_target_info(std::string const &target,
   return std::nullopt;
 }
 
+std::vector<std::string> cmake_query::get_target_names(std::string const &uri) {
+  auto mf = get_makefile(uri);
+  std::vector<std::string> result;
+  if (mf) {
+    auto &target_map = mf->GetTargets();
+    for (auto const &[name, target] : target_map) {
+      result.push_back(target.GetName());
+    }
+  }
+  return result;
+}
+
 std::string cmake_query::evaluate_variable(std::string const &name,
                                            std::string const &uri) {
   auto mf = get_makefile(uri);
