@@ -9,6 +9,7 @@
 #include "cmSystemTools.h"
 #include "support/filesystem.hpp"
 #include "support/whereami_wrapper.hpp"
+#include <fstream>
 #include <iostream>
 #include <optional>
 #include <stdexcept>
@@ -18,13 +19,6 @@ namespace cmake_query {
 
 std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir) {
   auto my_cmake = std::make_unique<cmake>(cmake::RoleProject, cmState::Project);
-  cmSystemTools::EnsureStdPipes();
-  // cmsys::Encoding::CommandLineArguments encoding_args =
-  //     cmsys::Encoding::CommandLineArguments::Main(argc, argv);
-  // argc = encoding_args.argc();
-  // argv = encoding_args.argv();
-
-  cmSystemTools::InitializeLibUV();
 
   // TODO the following is a hack for the weird global state that CMake needs to
   // initialize, probably we should avoid using FindCMakeResources and try to
@@ -44,27 +38,50 @@ std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir) {
   else
     throw std::runtime_error("Couldn't find CMake resources.");
 
-  //   my_cmake->SetHomeDirectory(root_dir.string());
+  my_cmake->SetHomeDirectory(root_dir.string());
   return my_cmake;
 }
+
+namespace {
+void replace_all(std::string &str, std::string find, std::string replace) {
+  size_t pos = str.find(find);
+  while (pos != std::string::npos) {
+    str.replace(pos, find.size(), replace);
+    pos = str.find(find, pos + replace.size());
+  }
+}
+
+// TODO is this efficient enough?
+void copy_cmake_cache(std::string src, std::string dst) {
+  std::string line;
+  auto &search = src;
+  auto &replace = dst;
+
+  std::ifstream in(src);
+  std::ofstream out(dst);
+  while (getline(in, line)) {
+    replace_all(line, src, dst);
+    out << line;
+  }
+}
+} // namespace
 
 cmake_query::cmake_query(std::string root_dir, std::string build_dir)
     : root_dir_{root_dir}, build_dir_{root_dir_ / build_dir},
       my_cmake{instantiate_cmake(fs::path{root_dir})} {}
 
-void cmake_query::configure() {
-  fs::path cmake_query_build_dir = root_dir_ / ".cmakels";
+int cmake_query::configure(fs::path const &cmake_query_build_dir) {
+  fs::path cmake_cache_src{build_dir_ / "CMakeCache.txt"};
   fs::create_directories(cmake_query_build_dir);
-  fs::path cmake_cache_src = build_dir_ / "CMakeCache.txt";
   if (fs::exists(cmake_cache_src))
-    fs::copy_file(cmake_cache_src, cmake_query_build_dir / "CMakeCache.txt",
-                  fs::copy_options::overwrite_existing);
+    copy_cmake_cache(cmake_cache_src.string(),
+                     (cmake_query_build_dir / "CMakeCache.txt").string());
   else {
     std::cerr << "No CMakeCache.txt was found." << std::endl;
   }
   my_cmake->SetHomeOutputDirectory(cmake_query_build_dir.string());
 
-  my_cmake->Run(std::vector<std::string>{}, false, true);
+  return my_cmake->Run(std::vector<std::string>{}, false, true);
 }
 
 cmMakefile *cmake_query::get_makefile(std::string const &uri) {
