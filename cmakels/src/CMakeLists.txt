@@ -17,6 +17,7 @@ target_include_directories(cmake_query
 target_include_directories(cmake_query PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_link_libraries(cmake_query PRIVATE CMakeLib)
 target_link_libraries(cmake_query PRIVATE whereami_wrapper)
+target_compile_definitions(cmake_query PUBLIC CMAKE_BUILD_WITH_CMAKE) #TODO private once cmakels doesn't see any cmake headers
 # TODO actually need to check if libstdc++ or libc++
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
     target_link_libraries(cmake_query PRIVATE stdc++fs)
