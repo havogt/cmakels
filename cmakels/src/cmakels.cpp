@@ -55,17 +55,18 @@ private:
   std::string root_path_;
   std::string build_directory_;
   std::map<std::string, std::optional<cmListFile>> open_files_;
-  cmake_query::cmake_query query_;
+  std::optional<cmake_query::cmake_query> query_;
 
 public:
-  cmakels(std::string root_path, std::string build_directory)
-      : root_path_{root_path}, build_directory_{build_directory},
-        query_(root_path, build_directory) {
-    query_.configure();
-  }
+  cmakels(std::string build_directory) : build_directory_{build_directory} {}
 
   protocol::InitializeResult
   initialize(const protocol::InitializeParams &params) override {
+    if (auto root_uri = params.rootUri) {
+      query_.emplace(uri_to_filename(*(params.rootUri)), build_directory_);
+      query_->configure();
+    }
+
     protocol::ServerCapabilities capabilites;
     capabilites.hoverProvider = true;
     capabilites.completionProvider = protocol::CompletionOptions{};
@@ -76,6 +77,7 @@ public:
     sync.save = {false};
     capabilites.textDocumentSync = sync;
     protocol::InitializeResult result{capabilites};
+
     return result;
   }
 
@@ -91,9 +93,9 @@ public:
           {static_cast<std::size_t>(position.position.line),
            static_cast<std::size_t>(position.position.character)});
       auto ret = substitute_variables(cmake_query::get_selected_token(result),
-                                      position.textDocument.uri, query_);
+                                      position.textDocument.uri, *query_);
       if (auto target_location =
-              query_.get_target_info(ret, position.textDocument.uri)) {
+              query_->get_target_info(ret, position.textDocument.uri)) {
         ret += " is a target";
       }
       return {ret};
@@ -120,8 +122,8 @@ public:
     }
     auto evaluated_selected_token =
         substitute_variables(cmake_query::get_selected_token(result),
-                             position.textDocument.uri, query_);
-    if (auto target_location = query_.get_target_info(
+                             position.textDocument.uri, *query_);
+    if (auto target_location = query_->get_target_info(
             evaluated_selected_token, position.textDocument.uri)) {
       return {filename_to_uri(target_location->filename),
               {{static_cast<int>(target_location->line - 1), 0},
@@ -151,8 +153,23 @@ public:
 
   std::variant<std::vector<protocol::CompletionItem>>
   completion(protocol::CompletionParams params) override {
-    return std::vector<protocol::CompletionItem>{
-        {"bla" + params.textDocument.uri}};
+    std::vector<protocol::CompletionItem> result;
+
+    // all files in the same directory (non-filtered)
+    auto path =
+        fs::path{uri_to_filename(params.textDocument.uri)}.remove_filename();
+    for (const auto &entry : fs::directory_iterator(path)) {
+      if (fs::is_regular_file(entry))
+        result.push_back(
+            protocol::CompletionItem{entry.path().filename().string()});
+    }
+
+    // all targets in the current mf
+    for (const auto &tgt : query_->get_target_names(params.textDocument.uri)) {
+      result.push_back(protocol::CompletionItem{tgt});
+    }
+
+    return result;
   }
 
   void didOpen(protocol::DidOpenTextDocumentParams params) override {
@@ -171,7 +188,7 @@ public:
   }
 
   void didSave(protocol::DidSaveTextDocumentParams params) override {
-    query_.configure();
+    query_->configure();
   }
 };
 
@@ -187,15 +204,13 @@ int main(int argc, char *argv[]) {
 #endif
   config.logger = {lscpp::Verbosity_MAX, "cmakels.log"};
 
-  if (argc < 3) {
-    std::cerr << "Usage " << argv[0] << " <workspace-dir> <build-dir>\n\n"
-              << "<workspace-dir> - directory containing the root "
-                 "CMakeLists.txt of the project\n"
-              << "<build-dir> - build directory (usually defined by an IDE)"
+  if (argc < 2) {
+    std::cerr << "Usage " << argv[0] << " <build-dir>\n\n"
+              << "<build-dir> - build directory relative to workspace root "
+                 "(usually defined by an IDE)"
               << std::endl;
     std::exit(1);
   } else {
-    lscpp::launch(cmakels{uri_to_filename(argv[1]), argv[2]}, config,
-                  lscpp::stdio_transporter{false});
+    lscpp::launch(cmakels{argv[1]}, config, lscpp::stdio_transporter{false});
   }
 }

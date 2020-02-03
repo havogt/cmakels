@@ -33,6 +33,7 @@ public:
   cmMakefile *get_makefile(std::string const &uri);
   std::optional<location> get_target_info(std::string const &target,
                                           std::string const &uri);
+  std::vector<std::string> get_target_names(std::string const &uri);
   std::string evaluate_variable(std::string const &name,
                                 std::string const &uri);
 };
