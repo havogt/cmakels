@@ -34,3 +34,15 @@ TEST(cmake_query, configure) {
   ASSERT_EQ(0, query.configure(test_cmake_query_config::cmakefiles_dir +
                                "/project1/.cmakels"));
 }
+
+TEST(cmake_query, get_target_info) {
+  std::string root_dir =
+      test_cmake_query_config::projects_src_dir + "/project1";
+
+  cmake_query::cmake_query query{root_dir, "build"};
+
+  query.configure(test_cmake_query_config::cmakefiles_dir +
+                  "/project1/.cmakels");
+  ASSERT_TRUE(query.get_target_info("a_target",
+                                    "file://" + root_dir + "/CMakeLists.txt"));
+}
