@@ -8,6 +8,7 @@
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
 #include "support/filesystem.hpp"
+#include "support/find_replace.hpp"
 #include "support/whereami_wrapper.hpp"
 #include <fstream>
 #include <iostream>
@@ -43,29 +44,14 @@ std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir) {
 }
 
 namespace {
-void replace_all(std::string &str, std::string find, std::string replace) {
-  size_t pos = str.find(find);
-  while (pos != std::string::npos) {
-    str.replace(pos, find.size(), replace);
-    pos = str.find(find, pos + replace.size());
-  }
-}
-
-// TODO is this efficient enough?
-void copy_cmake_cache(std::string src, std::string dst) {
-  std::string line;
-  auto &search = src;
-  auto &replace = dst;
-
-  std::ifstream in(src);
-  std::ofstream out(dst);
-  while (getline(in, line)) {
-    replace_all(line, src, dst);
-    out << line;
-  }
+void copy_cmake_cache(fs::path const &src, fs::path const &dst) {
+  std::ifstream in(src.string());
+  std::ofstream out(dst.string());
+  // replace references of the original build directory with the new location to
+  // suppress a warning.
+  support::stream_replace_all(in, out, src.string(), dst.string());
 }
 } // namespace
-
 cmake_query::cmake_query(std::string root_dir, std::string build_dir)
     : root_dir_{root_dir}, build_dir_{root_dir_ / build_dir},
       my_cmake{instantiate_cmake(fs::path{root_dir})} {}
@@ -73,10 +59,10 @@ cmake_query::cmake_query(std::string root_dir, std::string build_dir)
 int cmake_query::configure(fs::path const &cmake_query_build_dir) {
   fs::path cmake_cache_src{build_dir_ / "CMakeCache.txt"};
   fs::create_directories(cmake_query_build_dir);
-  if (fs::exists(cmake_cache_src))
-    copy_cmake_cache(cmake_cache_src.string(),
-                     (cmake_query_build_dir / "CMakeCache.txt").string());
-  else {
+  if (fs::exists(cmake_cache_src)) {
+    auto dst = cmake_query_build_dir / "CMakeCache.txt";
+    copy_cmake_cache(cmake_cache_src, dst);
+  } else {
     std::cerr << "No CMakeCache.txt was found." << std::endl;
   }
   my_cmake->SetHomeOutputDirectory(cmake_query_build_dir.string());
