@@ -11,13 +11,13 @@ vscode:
 
 tasks:
   - init: |
-      ln -s .gitpod/.vscode .
-      ln -s .gitpod/.theia .
+      mkdir .theia && ln -s .gitpod/.theia/settings.json .theia &&  ln -s .gitpod/.theia/launch.json .theia
+      mkdir .vscode && ln -s .gitpod/.vscode/cmake-kits.json .vscode
       mkdir build
       cmake -DCMAKE_INSTALL_PREFIX=/workspace/cmakels/install -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H/workspace/cmakels -B/workspace/cmakels/build "-GUnix Makefiles"
       ln -s /workspace/cmakels/build/compile_commands.json .
-    prebuild: |
-      cmake --build /workspace/cmakels/build/ --parallel $(nproc)
+    # prebuild: |
+    # cmake --build /workspace/cmakels/build/ --parallel $(nproc)
 
 github:
   prebuilds:
