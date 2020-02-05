@@ -5,12 +5,35 @@
 vscode:
   extensions:
     - twxs.cmake@0.0.17:9s7m9CWOr6i6NZ7CNNF4kw==
-    - ms-vscode.cmake-tools@1.2.3:qLtqI3aUcEBX9EpuK0ZCyw==
-
+    - ms-vscode.cmake-tools@1.3.0-beta2:D4zHFORWBgqtZI9hwWYNvA==
+    - ms-vscode.cpptools@0.26.2:Pq/tmf2WN3SanVzB4xZc1g==
     - havogt.cmakels-client@0.0.2:g8cQRQz62ufKoQ821YvtmQ==
 
 tasks:
   - init: |
       ln -s .gitpod/.vscode .
       ln -s .gitpod/.theia .
-      mkdir build && cd build && cmake -D CMAKE_EXPORT_COMPILE_COMMANDS=ON .. && cp compile_commands.json ..
+      mkdir build
+      cmake -DCMAKE_INSTALL_PREFIX=/workspace/cmakels/install -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H/workspace/cmakels -B/workspace/cmakels/build "-GUnix Makefiles"
+      ln -s /workspace/cmakels/build/compile_commands.json .
+    prebuild: |
+      cmake --build /workspace/cmakels/build/ --parallel $(nproc)
+
+github:
+  prebuilds:
+    # enable for the master/default branch (defaults to true)
+    master: true
+    # enable for all branches in this repo (defaults to false)
+    branches: false
+    # enable for pull requests coming from this repo (defaults to true)
+    pullRequests: true
+    # enable for pull requests coming from forks (defaults to false)
+    pullRequestsFromForks: false
+    # add a check to pull requests (defaults to true)
+    addCheck: false
+    # add a "Review in Gitpod" button as a comment to pull requests (defaults to false)
+    addComment: false
+    # add a "Review in Gitpod" button to the pull request's description (defaults to false)
+    addBadge: true
+    # add a label once the prebuild is ready to pull requests (defaults to false)
+    addLabel: false
