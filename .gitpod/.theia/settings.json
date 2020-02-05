@@ -3,12 +3,8 @@
     "cpp.clangdExecutable": "/usr/bin/clangd",
     "cpp.clangTidy": true,
     "cpp.trace.server": "verbose",
-    "cmake.ignoreKitEnv": true,
     "cmake.useCMakeServer": false,
     "cmake.configureOnOpen": true,
-    "cmake.configureArgs": [
-        "-DCMAKE_INSTALL_PREFIX=/workspace/cmakels/install"
-    ],
     "editor.formatOnSave": true,
     "cmakels.path": "/workspace/cmakels/build/cmakels/src/cmakels",
     "cmakels.trace.server": "verbose",
