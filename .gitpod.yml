@@ -15,7 +15,7 @@ tasks:
       ln -s .gitpod/.theia .
       mkdir build && cd build && cmake -D CMAKE_EXPORT_COMPILE_COMMANDS=ON .. && cp compile_commands.json ..
     prebuild: |
-      cd build && cmake --build . --parallel $(nproc)
+      cmake --build . --parallel $(nproc)
 
 github:
   prebuilds:
