@@ -8,4 +8,5 @@
     "editor.formatOnSave": true,
     "cmakels.path": "/workspace/cmakels/build/cmakels/src/cmakels",
     "cmakels.trace.server": "verbose",
+    "C_Cpp.intelliSenseEngine": "Disabled",
 }
