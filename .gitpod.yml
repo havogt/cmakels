@@ -6,7 +6,7 @@ vscode:
   extensions:
     - twxs.cmake@0.0.17:9s7m9CWOr6i6NZ7CNNF4kw==
     - ms-vscode.cmake-tools@1.2.3:qLtqI3aUcEBX9EpuK0ZCyw==
-
+    - ms-vscode.cpptools@0.26.2:Pq/tmf2WN3SanVzB4xZc1g==
     - havogt.cmakels-client@0.0.2:g8cQRQz62ufKoQ821YvtmQ==
 
 tasks:
