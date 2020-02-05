@@ -1,5 +1,5 @@
 {
-    "cpp.clangdArgs": "--background-index",
+    "cpp.clangdArgs": "--background-index --index=file=/workspace/cmakels/clangd.dex",
     "cpp.clangdExecutable": "/usr/bin/clangd",
     "cpp.clangTidy": true,
     "cpp.trace.server": "verbose",
