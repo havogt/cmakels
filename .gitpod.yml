@@ -1,6 +1,5 @@
 ---
-#image:
-#  file: .gitpod.Dockerfile
+image: havogt/havogt/gitpod-clangd-indexer
 
 vscode:
   extensions:
