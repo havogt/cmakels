@@ -2,7 +2,7 @@
 	"name": "cmakels-client",
 	"displayName": "cmakels client",
 	"description": "A VSCode client for cmakels",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"publisher": "havogt",
 	"engines": {
 		"vscode": "^1.31.0"
@@ -47,7 +47,14 @@
 					"description": "Location of CMakeCache.txt as configured by the user (or as used by the cmake-tools extension) relative to workspaceRoot."
 				}
 			}
-		}
+		},
+		"commands": [
+			{
+				"command": "cmakels.restart",
+				"title": "cmakels: Restart Language Server",
+				"description": "Restart the running instance of the language server"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
