@@ -17,7 +17,10 @@ tasks:
       cmake -DCMAKE_INSTALL_PREFIX=/workspace/cmakels/install -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H/workspace/cmakels -B/workspace/cmakels/build "-GUnix Makefiles"
       ln -s /workspace/cmakels/build/compile_commands.json .
     prebuild: |
-      cmake --build /workspace/cmakels/build/ --parallel $(nproc)
+      mkdir -p build/.clangd
+      cmake --build /workspace/cmakels/build/ --parallel $(nproc) &
+      clangd-indexer-10-rc1 --executor=all-TUs compile_commands.json > /workspace/cmakels/build/.clangd/clangd.dex &
+      wait
 
 github:
   prebuilds:

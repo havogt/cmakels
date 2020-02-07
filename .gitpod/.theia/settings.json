@@ -1,6 +1,6 @@
 {
-    "cpp.clangdArgs": "--background-index",
-    "cpp.clangdExecutable": "/usr/bin/clangd",
+    "cpp.clangdExecutable": "/usr/bin/clangd-10-rc1",
+    "cpp.clangdArgs": "--index-file=/workspace/cmakels/build/.clangd/clangd.dex",
     "cpp.clangTidy": true,
     "cpp.trace.server": "verbose",
     "cmake.useCMakeServer": false,
