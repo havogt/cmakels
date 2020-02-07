@@ -1,5 +1,5 @@
 ---
-image: havogt/havogt/gitpod-clangd-indexer
+image: havogt/gitpod-clangd-indexer
 
 vscode:
   extensions:
