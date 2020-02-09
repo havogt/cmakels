@@ -9,6 +9,8 @@
 #include <cmListFileCache.h> //TODO remove dependency
 
 #include "support/filesystem.hpp"
+#include "support/find_replace.hpp"
+#include "support/uri_encode.hpp"
 #include <cstdint>
 #include <iostream>
 #include <lscpp/lsp_launcher.h>
@@ -17,14 +19,8 @@
 #include <regex>
 #include <stdexcept>
 
-using namespace lscpp; // TODO remove
-
-std::string uri_to_filename(std::string const &uri) {
-  return uri.substr(7, std::string::npos);
-}
-std::string filename_to_uri(std::string const &filename) {
-  return "file://" + filename;
-}
+using namespace lscpp;   // TODO remove
+using namespace support; // TODO remove
 
 std::string substitute_variables(std::string const &token, std::string uri,
                                  cmake_query::cmake_query &query) {
