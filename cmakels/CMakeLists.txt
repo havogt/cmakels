@@ -5,6 +5,15 @@ project(cmakels LANGUAGES C CXX)
 option(BUILD_PLAYGROUND "" OFF)
 mark_as_advanced(BUILD_PLAYGROUND)
 
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+    endif()
+    if((CMAKE_C_COMPILER_ID STREQUAL "GNU") OR (CMAKE_C_COMPILER_ID STREQUAL "Clang"))
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+    endif()
+endif()
+
 include(CTest)
 
 add_subdirectory(external)

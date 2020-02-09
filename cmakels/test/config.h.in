@@ -1,0 +1,8 @@
+#pragma once
+
+#include <string>
+
+namespace test_cmake_query_config {
+    inline std::string const projects_src_dir = "@TEST_PROJECTS_SOURCE_DIR@";
+    inline std::string const cmakefiles_dir = "@TEST_CMAKEFILES_DIR@";
+}

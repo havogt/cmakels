@@ -7,8 +7,13 @@
 #include "cmState.h"
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
+#include "config.h"
 #include "support/filesystem.hpp"
-#include "support/whereami_wrapper.hpp"
+#include "support/find_replace.hpp"
+#include "support/uri_encode.hpp"
+#include <algorithm>
+#include <cctype>
+#include <fstream>
 #include <iostream>
 #include <optional>
 #include <stdexcept>
@@ -16,59 +21,78 @@
 
 namespace cmake_query {
 
-cmake_query::cmake_query(std::string root_dir, std::string build_dir)
-    : root_dir_{root_dir}, build_dir_{root_dir_ / build_dir},
-      my_cmake{cmake::RoleProject, cmState::Project} {
-
-  cmSystemTools::EnsureStdPipes();
-  // cmsys::Encoding::CommandLineArguments encoding_args =
-  //     cmsys::Encoding::CommandLineArguments::Main(argc, argv);
-  // argc = encoding_args.argc();
-  // argv = encoding_args.argv();
-
-  cmSystemTools::InitializeLibUV();
+std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir) {
+  auto my_cmake = std::make_unique<cmake>(cmake::RoleProject, cmState::Project);
 
   // TODO the following is a hack for the weird global state that CMake needs to
   // initialize, probably we should avoid using FindCMakeResources and try to
   // initialize the relevant parts by hand
-  fs::path cmakels_dir(whereami::getExecutablePath().c_str());
-  fs::path cmake_exe_in_build_tree =
-      cmakels_dir.parent_path().parent_path() / "external/cmake/bin/cmake";
-  fs::path cmake_exe_in_install_tree =
-      cmakels_dir.parent_path().parent_path() / "bin/cmake";
+  fs::path cmake_exe_in_build_tree = config::cmake_exe_path;
+  // TODO fix for install
+  // fs::path cmake_exe_in_install_tree =
+  //     cmakels_dir.parent_path().parent_path() / "bin/cmake.exe";
 
   // string().c_str() to convert path to const char* on win, see
   // https://stackoverflow.com/a/54109263/5085250
   if (fs::exists(cmake_exe_in_build_tree))
     cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.string().c_str());
-  else if (fs::exists(cmake_exe_in_install_tree))
-    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.string().c_str());
+  // else if (fs::exists(cmake_exe_in_install_tree))
+  //   cmSystemTools::FindCMakeResources(cmake_exe_in_install_tree.string().c_str());
   else
     throw std::runtime_error("Couldn't find CMake resources.");
 
-  my_cmake.SetHomeDirectory(root_dir_.string());
+  my_cmake->SetHomeDirectory(root_dir.string());
+  return my_cmake;
 }
 
-void cmake_query::configure() {
-  fs::path cmake_query_build_dir = root_dir_ / ".cmakels";
+namespace {
+void copy_cmake_cache(fs::path const &src, fs::path const &dst) {
+  std::ifstream in(src.string());
+  std::ofstream out(dst.string());
+  // replace references of the original build directory with the new location to
+  // suppress a warning.
+  support::stream_replace_all(in, out, src.string(), dst.string());
+}
+} // namespace
+cmake_query::cmake_query(std::string root_dir, std::string build_dir)
+    : root_dir_{root_dir}, build_dir_{root_dir_ / build_dir},
+      my_cmake{instantiate_cmake(fs::path{root_dir})} {}
+
+int cmake_query::configure(fs::path const &cmake_query_build_dir) {
+  fs::path cmake_cache_src{build_dir_ / "CMakeCache.txt"};
   fs::create_directories(cmake_query_build_dir);
-  fs::path cmake_cache_src = build_dir_ / "CMakeCache.txt";
-  if (fs::exists(cmake_cache_src))
-    fs::copy_file(cmake_cache_src, cmake_query_build_dir / "CMakeCache.txt",
-                  fs::copy_options::overwrite_existing);
-  else {
-    std::cerr << "No CMakeCache.txt was found." << std::endl;
+  if (fs::exists(cmake_cache_src)) {
+    auto dst = cmake_query_build_dir / "CMakeCache.txt";
+    copy_cmake_cache(cmake_cache_src, dst);
+  } else {
+    std::cerr << "No CMakeCache.txt was found at " << cmake_cache_src.string()
+              << std::endl;
   }
-  my_cmake.SetHomeOutputDirectory(cmake_query_build_dir.string());
+  my_cmake->SetHomeOutputDirectory(cmake_query_build_dir.string());
 
-  my_cmake.Run(std::vector<std::string>{}, false, true);
+  return my_cmake->Run(std::vector<std::string>{}, false, true);
 }
+
+namespace {
+// TODO check if needed
+std::string normalize_filename(std::string const &filename) {
+#ifdef _WIN32
+  auto str = filename;
+  std::replace(str.begin(), str.end(), '\\', '/');
+  std::transform(str.begin(), str.end(), str.begin(),
+                 [](unsigned char c) { return std::tolower(c); });
+  return str;
+#else
+  return filename;
+#endif
+}
+} // namespace
 
 cmMakefile *cmake_query::get_makefile(std::string const &uri) {
-  auto mfs = my_cmake.GetGlobalGenerator()->GetMakefiles();
+  auto mfs = my_cmake->GetGlobalGenerator()->GetMakefiles();
+  auto filename = normalize_filename(support::uri_to_filename(uri));
   for (auto mf : mfs) {
-    if (("file://" + mf->GetListFiles()[0]).compare(uri) ==
-        0) { // TODO fix file://
+    if (normalize_filename(mf->GetListFiles()[0]).compare(filename) == 0) {
       return mf;
     }
   }
