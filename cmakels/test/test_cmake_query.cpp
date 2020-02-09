@@ -7,14 +7,6 @@
 
 #include <cmake_query.hpp>
 
-#include "cmGlobalGenerator.h"
-#include "cmListFileCache.h"
-#include "cmMakefile.h"
-#include "cmMessenger.h"
-#include "cmState.h"
-#include "cmStateSnapshot.h"
-#include "cmSystemTools.h"
-
 #include <support/filesystem.hpp>
 #include <support/uri_encode.hpp>
 #include <support/whereami_wrapper.hpp>
