@@ -7,10 +7,10 @@
 #include "cmState.h"
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
+#include "config.h"
 #include "support/filesystem.hpp"
 #include "support/find_replace.hpp"
 #include "support/uri_encode.hpp"
-#include "support/whereami_wrapper.hpp"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -27,19 +27,17 @@ std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir) {
   // TODO the following is a hack for the weird global state that CMake needs to
   // initialize, probably we should avoid using FindCMakeResources and try to
   // initialize the relevant parts by hand
-  fs::path cmakels_dir(whereami::getExecutablePath().c_str());
-  // TODO cmake path via config from target
-  fs::path cmake_exe_in_build_tree =
-      cmakels_dir.parent_path().parent_path() / "external/cmake/bin/cmake.exe";
-  fs::path cmake_exe_in_install_tree =
-      cmakels_dir.parent_path().parent_path() / "bin/cmake.exe";
+  fs::path cmake_exe_in_build_tree = config::cmake_exe_path;
+  // TODO fix for install
+  // fs::path cmake_exe_in_install_tree =
+  //     cmakels_dir.parent_path().parent_path() / "bin/cmake.exe";
 
   // string().c_str() to convert path to const char* on win, see
   // https://stackoverflow.com/a/54109263/5085250
   if (fs::exists(cmake_exe_in_build_tree))
     cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.string().c_str());
-  else if (fs::exists(cmake_exe_in_install_tree))
-    cmSystemTools::FindCMakeResources(cmake_exe_in_build_tree.string().c_str());
+  // else if (fs::exists(cmake_exe_in_install_tree))
+  //   cmSystemTools::FindCMakeResources(cmake_exe_in_install_tree.string().c_str());
   else
     throw std::runtime_error("Couldn't find CMake resources.");
 
