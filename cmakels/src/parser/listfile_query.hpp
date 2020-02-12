@@ -8,7 +8,7 @@
 #include "listfile_parser.hpp" // TODO move typedefs in separate header
 #include <string>
 
-namespace cmake_query {
+namespace cmakels::parser {
 
 struct textdocument_position {
   std::size_t line;
@@ -40,4 +40,4 @@ get_function_result_t get_function(listfile_t const &lf,
 
 std::string get_selected_token(get_function_result_t const &result);
 
-} // namespace cmake_query
+} // namespace cmakels::parser

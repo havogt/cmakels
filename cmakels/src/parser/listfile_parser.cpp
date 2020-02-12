@@ -5,11 +5,11 @@
  */
 #include "listfile_parser.hpp"
 
-#include "support/filesystem.hpp"
+#include "../support/filesystem.hpp"
 #include <cmMessenger.h>
 #include <fstream>
 
-namespace cmake_query {
+namespace cmakels::parser {
 // TODO we need support for parsing incomplete files up to a position
 std::optional<cmListFile>
 parse_listfile(std::string const
@@ -81,4 +81,4 @@ std::size_t get_line_end(cmListFileArgument const &arg) {
 std::size_t get_column_end(cmListFileArgument const &arg) { return arg.ColEnd; }
 std::string get_name(cmListFileArgument const &arg) { return arg.Value; }
 
-} // namespace cmake_query
+} // namespace cmakels::parser

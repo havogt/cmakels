@@ -2,7 +2,7 @@
 #include "find_replace.hpp"
 #include <algorithm>
 
-namespace support {
+namespace cmakels::support {
 // TODO implement clean platform independent uri_to_filename transformations
 std::string uri_to_filename(std::string const &uri) {
 #ifdef _WIN32
@@ -24,4 +24,4 @@ std::string filename_to_uri(std::string const &filename) {
   return "file://" + filename;
 #endif
 }
-} // namespace support
+} // namespace cmakels::support

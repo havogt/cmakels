@@ -3,11 +3,11 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include "cmake_query.hpp" // TODO refactor
-#include "listfile_parser.hpp"
-#include "listfile_query.hpp"
 #include <cmListFileCache.h> //TODO remove dependency
 
+#include "cmake_query/cmake_query.hpp"
+#include "parser/listfile_parser.hpp"
+#include "parser/listfile_query.hpp"
 #include "support/filesystem.hpp"
 #include "support/find_replace.hpp"
 #include "support/uri_encode.hpp"
@@ -19,11 +19,12 @@
 #include <regex>
 #include <stdexcept>
 
-using namespace lscpp;   // TODO remove
-using namespace support; // TODO remove
+using namespace lscpp;            // TODO remove
+using namespace cmakels::support; // TODO remove
+using namespace cmakels::parser;  // TODO remove
 
 std::string substitute_variables(std::string const &token, std::string uri,
-                                 cmake_query::cmake_query &query) {
+                                 cmakels::cmake_query::cmake_query &query) {
   std::regex var_regex("(\\$\\{(.*?)\\})", std::regex_constants::ECMAScript);
   if (std::regex_search(token, var_regex)) {
     std::string result = token;
@@ -45,6 +46,8 @@ std::string substitute_variables(std::string const &token, std::string uri,
     return token;
   }
 }
+
+namespace cmakels {
 
 class cmakels : public lscpp::lsp_server, lscpp::TextDocumentService {
 private:
@@ -84,11 +87,11 @@ public:
     if (!open_files_[position.textDocument.uri])
       return {"Parsing Error"};
     try {
-      auto result = cmake_query::get_function(
+      auto result = parser::get_function(
           *(open_files_[position.textDocument.uri]),
           {static_cast<std::size_t>(position.position.line),
            static_cast<std::size_t>(position.position.character)});
-      auto ret = substitute_variables(cmake_query::get_selected_token(result),
+      auto ret = substitute_variables(parser::get_selected_token(result),
                                       position.textDocument.uri, *query_);
       if (auto target_location =
               query_->get_target_info(ret, position.textDocument.uri)) {
@@ -102,23 +105,20 @@ public:
 
   protocol::Location
   definition(protocol::TextDocumentPositionParams position) override {
-    auto result = cmake_query::get_function(
+    auto result = parser::get_function(
         *(open_files_[position.textDocument.uri]),
         {static_cast<std::size_t>(position.position.line),
          static_cast<std::size_t>(position.position.character)});
     if (result.function.Name.Lower.compare("add_subdirectory") == 0) {
       fs::path p = position.textDocument.uri;
       p.remove_filename();
-      return {(p /
-               cmake_query::get_name(
-                   cmake_query::get_arguments(result.function)[0]) /
+      return {(p / parser::get_name(parser::get_arguments(result.function)[0]) /
                "CMakeLists.txt")
                   .string(),
               {{0, 0}, {0, 0}}};
     }
-    auto evaluated_selected_token =
-        substitute_variables(cmake_query::get_selected_token(result),
-                             position.textDocument.uri, *query_);
+    auto evaluated_selected_token = substitute_variables(
+        parser::get_selected_token(result), position.textDocument.uri, *query_);
     if (auto target_location = query_->get_target_info(
             evaluated_selected_token, position.textDocument.uri)) {
       return {filename_to_uri(target_location->filename),
@@ -171,10 +171,10 @@ public:
   void didOpen(protocol::DidOpenTextDocumentParams params) override {
     open_files_.emplace(
         std::make_pair(params.textDocument.uri,
-                       cmake_query::parse_listfile(params.textDocument.text)));
+                       parser::parse_listfile(params.textDocument.text)));
   }
   void didChange(protocol::DidChangeTextDocumentParams params) override {
-    open_files_[params.textDocument.uri] = cmake_query::parse_listfile(
+    open_files_[params.textDocument.uri] = parser::parse_listfile(
         params.contentChanges[0].text); // using full sync
     // TODO don't parse everytime: probably save the string and keep a cache
     // and keep a cache for parsed file
@@ -187,6 +187,7 @@ public:
     query_->configure();
   }
 };
+} // namespace cmakels
 
 int main(int argc, char *argv[]) {
   // Redirect std::cout to std::cerr to ensure that  cmake doesn't write to
@@ -207,6 +208,7 @@ int main(int argc, char *argv[]) {
               << std::endl;
     std::exit(1);
   } else {
-    lscpp::launch(cmakels{argv[1]}, config, lscpp::stdio_transporter{false});
+    lscpp::launch(cmakels::cmakels{argv[1]}, config,
+                  lscpp::stdio_transporter{false});
   }
 }

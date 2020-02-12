@@ -1,5 +1,7 @@
 #include "cmake_query.hpp"
 
+#include "../support/find_replace.hpp"
+#include "../support/uri_encode.hpp"
 #include "cmGlobalGenerator.h"
 #include "cmListFileCache.h"
 #include "cmMakefile.h"
@@ -8,9 +10,6 @@
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
 #include "config.h"
-#include "support/filesystem.hpp"
-#include "support/find_replace.hpp"
-#include "support/uri_encode.hpp"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -19,14 +18,14 @@
 #include <stdexcept>
 #include <string>
 
-namespace cmake_query {
+namespace cmakels::cmake_query {
 
 std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir) {
   auto my_cmake = std::make_unique<cmake>(cmake::RoleProject, cmState::Project);
 
-  // TODO the following is a hack for the weird global state that CMake needs to
-  // initialize, probably we should avoid using FindCMakeResources and try to
-  // initialize the relevant parts by hand
+  // TODO the following is a hack for the weird global state that CMake needs
+  // to initialize, probably we should avoid using FindCMakeResources and try
+  // to initialize the relevant parts by hand
   fs::path cmake_exe_in_build_tree = config::cmake_exe_path;
   // TODO fix for install
   // fs::path cmake_exe_in_install_tree =
@@ -49,8 +48,8 @@ namespace {
 void copy_cmake_cache(fs::path const &src, fs::path const &dst) {
   std::ifstream in(src.string());
   std::ofstream out(dst.string());
-  // replace references of the original build directory with the new location to
-  // suppress a warning.
+  // replace references of the original build directory with the new location
+  // to suppress a warning.
   support::stream_replace_all(in, out, src.string(), dst.string());
 }
 } // namespace
@@ -133,4 +132,4 @@ std::string cmake_query::evaluate_variable(std::string const &name,
   }
   return "<variable-not-found>";
 }
-} // namespace cmake_query
+} // namespace cmakels::cmake_query

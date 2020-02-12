@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-namespace support {
+namespace cmakels::support {
 void replace_all(std::string &str, std::string const &find,
                  std::string const &replace) {
   size_t pos = str.find(find);
@@ -20,4 +20,4 @@ void stream_replace_all(std::istream &in, std::ostream &out,
     out << line;
   }
 }
-} // namespace support
+} // namespace cmakels::support

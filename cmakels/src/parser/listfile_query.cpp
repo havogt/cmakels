@@ -8,7 +8,7 @@
 
 #include <stdexcept>
 
-namespace cmake_query {
+namespace cmakels::parser {
 
 namespace {
 bool is_in_function(listfile_function_t const &f, textdocument_position pos) {
@@ -54,4 +54,4 @@ std::string get_selected_token(get_function_result_t const &result) {
     return get_name(get_arguments(result.function)[result.id - 1]);
   }
 }
-} // namespace cmake_query
+} // namespace cmakels::parser
