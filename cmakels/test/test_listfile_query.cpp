@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 #include <gtest/gtest.h>
-#include <parser/listfile_parser.hpp>
-#include <parser/listfile_query.hpp>
+#include <listfile_parser/listfile_parser.hpp>
+#include <listfile_parser/listfile_query.hpp>
 
 namespace cmakels::parser {
 namespace {

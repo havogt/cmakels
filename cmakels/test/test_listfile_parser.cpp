@@ -5,8 +5,8 @@
  */
 #include <gtest/gtest.h>
 
+#include <listfile_parser/listfile_parser.hpp>
 #include <map>
-#include <parser/listfile_parser.hpp>
 #include <string>
 
 namespace cmakels::parser {

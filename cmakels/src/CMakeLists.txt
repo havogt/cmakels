@@ -13,12 +13,12 @@ target_include_directories(cmakels_CMakeLibWithIncludes
 
 add_subdirectory(support)
 add_subdirectory(cmake_query)
-add_subdirectory(parser)
+add_subdirectory(listfile_parser)
+add_subdirectory(core)
 
-add_executable(cmakels cmakels.cpp)
-target_link_libraries(cmakels PRIVATE cmake_query)
-target_link_libraries(cmakels PRIVATE listfile_parser)
+add_executable(cmakels cmakels_main.cpp)
 target_link_libraries(cmakels PRIVATE lscpp)
+target_link_libraries(cmakels PRIVATE core)
 # TODO actually need to check if libstdc++ or libc++
 if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
     target_link_libraries(cmakels PRIVATE stdc++fs)
