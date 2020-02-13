@@ -5,13 +5,15 @@
  */
 #include <gtest/gtest.h>
 
-#include <cmake_query.hpp>
+#include <cmake_query/cmake_query.hpp>
 
 #include <support/filesystem.hpp>
 #include <support/uri_encode.hpp>
 #include <support/whereami_wrapper.hpp>
 
 #include "config.h"
+
+using namespace cmakels;
 
 TEST(cmake_query, instantiate_cmake) {
   std::string root_dir =

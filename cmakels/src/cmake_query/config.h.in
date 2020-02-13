@@ -2,6 +2,6 @@
 
 #include <string>
 
-namespace cmake_query::config {
+namespace cmakels::cmake_query::config {
 inline std::string const cmake_exe_path = "$<TARGET_FILE:cmake>";
 }

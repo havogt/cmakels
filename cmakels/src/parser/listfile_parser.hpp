@@ -7,7 +7,7 @@
 #include <optional>
 #include <string>
 
-namespace cmake_query {
+namespace cmakels::parser {
 using listfile_t = cmListFile;
 using listfile_function_t = cmListFileFunction;
 using listfile_argument_t = cmListFileArgument;
@@ -36,4 +36,4 @@ std::size_t get_column(listfile_argument_t const &arg);
 std::size_t get_line_end(listfile_argument_t const &arg);
 std::size_t get_column_end(listfile_argument_t const &arg);
 std::string get_name(listfile_argument_t const &f);
-} // namespace cmake_query
+} // namespace cmakels::parser

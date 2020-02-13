@@ -5,13 +5,13 @@
  */
 #pragma once
 
+#include "../support/filesystem.hpp"
 #include "cmake.h"
-#include "support/filesystem.hpp"
 #include <optional>
 
 class cmMakefile;
 
-namespace cmake_query {
+namespace cmakels::cmake_query {
 
 std::unique_ptr<cmake> instantiate_cmake(fs::path root_dir);
 
@@ -37,4 +37,4 @@ public:
   std::string evaluate_variable(std::string const &name,
                                 std::string const &uri);
 };
-} // namespace cmake_query
+} // namespace cmakels::cmake_query
