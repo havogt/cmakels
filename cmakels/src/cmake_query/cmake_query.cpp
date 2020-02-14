@@ -111,6 +111,24 @@ std::optional<location> cmake_query::get_target_info(std::string const &target,
   return std::nullopt;
 }
 
+// TODO use error type instead of optional if the target is not found
+std::optional<std::vector<std::string>>
+cmake_query::get_target_sources(std::string const &target,
+                                std::string const &uri) {
+  auto mf = get_makefile(uri);
+  if (mf) {
+    auto tgt = mf->FindTargetToUse(target);
+    if (tgt) {
+      std::vector<std::string> result;
+      for (auto const &src_entry : tgt->GetSourceEntries()) {
+        result.push_back(src_entry);
+      }
+      return result;
+    }
+  }
+  return std::nullopt;
+}
+
 std::vector<std::string> cmake_query::get_target_names(std::string const &uri) {
   auto mf = get_makefile(uri);
   std::vector<std::string> result;

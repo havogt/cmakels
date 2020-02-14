@@ -85,7 +85,12 @@ cmake_language_server::hover(protocol::TextDocumentPositionParams position) {
                                     position.textDocument.uri, *query_);
     if (auto target_location =
             query_->get_target_info(ret, position.textDocument.uri)) {
-      ret += " is a target";
+      auto srcs = query_->get_target_sources(ret, position.textDocument.uri);
+      ret += " is a target!";
+      if (srcs)
+        for (auto const &src : *srcs) {
+          ret += "\n" + src;
+        }
     }
     return {ret};
   } catch (std::runtime_error e) { // TODO fix this exception pattern
