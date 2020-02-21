@@ -31,8 +31,8 @@ public:
   int configure() { return configure(root_dir_ / ".cmakels"); }
   int configure(fs::path const &cmake_query_build_dir);
   cmMakefile *get_makefile(std::string const &uri);
-  std::optional<location> get_target_info(std::string const &target,
-                                          std::string const &uri);
+  std::optional<location> target_definition_location(std::string const &target,
+                                                     std::string const &uri);
   std::optional<std::vector<std::string>>
   get_target_sources(std::string const &target, std::string const &uri);
   std::vector<std::string> get_target_names(std::string const &uri);

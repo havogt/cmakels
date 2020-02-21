@@ -98,8 +98,9 @@ cmMakefile *cmake_query::get_makefile(std::string const &uri) {
   return nullptr;
 }
 
-std::optional<location> cmake_query::get_target_info(std::string const &target,
-                                                     std::string const &uri) {
+std::optional<location>
+cmake_query::target_definition_location(std::string const &target,
+                                        std::string const &uri) {
   auto mf = get_makefile(uri);
   if (mf) {
     auto tgt = mf->FindTargetToUse(target);

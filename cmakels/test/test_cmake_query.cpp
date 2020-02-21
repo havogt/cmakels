@@ -30,7 +30,7 @@ TEST(cmake_query, configure) {
                                "/project1/.cmakels"));
 }
 
-TEST(cmake_query, get_target_info) {
+TEST(cmake_query, target_definition_location) {
   std::string root_dir =
       test_cmake_query_config::projects_src_dir + "/project1";
 
@@ -38,6 +38,6 @@ TEST(cmake_query, get_target_info) {
 
   query.configure(test_cmake_query_config::cmakefiles_dir +
                   "/project1/.cmakels");
-  ASSERT_TRUE(query.get_target_info(
+  ASSERT_TRUE(query.target_definition_location(
       "a_target", support::filename_to_uri(root_dir) + "/CMakeLists.txt"));
 }
