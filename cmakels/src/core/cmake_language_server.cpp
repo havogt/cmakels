@@ -81,11 +81,20 @@ cmake_language_server::hover(protocol::TextDocumentPositionParams position) {
         *(open_files_[position.textDocument.uri]),
         {static_cast<std::size_t>(position.position.line),
          static_cast<std::size_t>(position.position.character)});
-    auto ret = substitute_variables(parser::get_selected_token(result),
-                                    position.textDocument.uri, *query_);
-    if (auto target_location =
-            query_->get_target_info(ret, position.textDocument.uri)) {
-      ret += " is a target";
+    auto selected_token = parser::get_selected_token(result);
+    auto ret = substitute_variables(selected_token, position.textDocument.uri,
+                                    *query_);
+    if (auto target_location = query_->target_definition_location(
+            ret, position.textDocument.uri)) {
+      auto srcs = query_->get_target_sources(ret, position.textDocument.uri);
+      std::string target_string = "Target *" + ret + "*";
+      if (srcs) {
+        target_string += "\n\nSources:";
+        for (auto const &src : *srcs) {
+          target_string += "\n\n" + src;
+        }
+      }
+      return {target_string};
     }
     return {ret};
   } catch (std::runtime_error e) { // TODO fix this exception pattern
@@ -109,7 +118,7 @@ protocol::Location cmake_language_server::definition(
   }
   auto evaluated_selected_token = substitute_variables(
       parser::get_selected_token(result), position.textDocument.uri, *query_);
-  if (auto target_location = query_->get_target_info(
+  if (auto target_location = query_->target_definition_location(
           evaluated_selected_token, position.textDocument.uri)) {
     return {filename_to_uri(target_location->filename),
             {{static_cast<int>(target_location->line - 1), 0},

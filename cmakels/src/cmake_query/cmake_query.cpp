@@ -98,14 +98,33 @@ cmMakefile *cmake_query::get_makefile(std::string const &uri) {
   return nullptr;
 }
 
-std::optional<location> cmake_query::get_target_info(std::string const &target,
-                                                     std::string const &uri) {
+std::optional<location>
+cmake_query::target_definition_location(std::string const &target,
+                                        std::string const &uri) {
   auto mf = get_makefile(uri);
   if (mf) {
     auto tgt = mf->FindTargetToUse(target);
     if (tgt) {
       auto top = tgt->GetBacktrace().Top();
       return location{top.FilePath, top.Line};
+    }
+  }
+  return std::nullopt;
+}
+
+// TODO use error type instead of optional if the target is not found
+std::optional<std::vector<std::string>>
+cmake_query::get_target_sources(std::string const &target,
+                                std::string const &uri) {
+  auto mf = get_makefile(uri);
+  if (mf) {
+    auto tgt = mf->FindTargetToUse(target);
+    if (tgt) {
+      std::vector<std::string> result;
+      for (auto const &src_entry : tgt->GetSourceEntries()) {
+        result.push_back(src_entry);
+      }
+      return result;
     }
   }
   return std::nullopt;
