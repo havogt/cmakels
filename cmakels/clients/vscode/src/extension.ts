@@ -1,9 +1,11 @@
-import { workspace, ExtensionContext, commands } from 'vscode';
+import { workspace, ExtensionContext, commands, window } from 'vscode';
 
 import {
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
+	TextDocumentPositionParams,
+	TextDocumentIdentifier,
 } from 'vscode-languageclient';
 
 /**
@@ -55,6 +57,25 @@ export function activate(context: ExtensionContext) {
 		await client.stop();
 		client.start();
 	}));
+
+	context.subscriptions.push(commands.registerCommand('cmakels.target_dependencies', async () => {
+		if(window.activeTextEditor) {
+			let identifier : TextDocumentIdentifier =
+				{ uri: window.activeTextEditor.document.uri.toString()};
+
+			let params :TextDocumentPositionParams = {
+				textDocument: identifier,
+				position: window.activeTextEditor.selection.active};
+
+			client.sendRequest("custom/dependencies", params );
+		}
+	}));
+
+	client.onReady().then(() => {
+		client.onRequest("custom/dependencies", () => {
+			console.log("received custom/dependencies");
+		});
+	});
 
 	client.start();
 }

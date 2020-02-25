@@ -5,10 +5,13 @@
  */
 #pragma once
 
+// TODO ODR
+
 #include "../../external/json.hpp"
 #include <loguru.hpp>
 
 #include "lscpp/protocol/CompletionItem.h"
+#include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidChangeTextDocumentParams.h"
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
@@ -21,6 +24,7 @@
 #include "lscpp/protocol/TextDocumentIdentifier.h"
 #include "lscpp/protocol/TextDocumentItem.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
+#include "lscpp/protocol/extensions/Dependencies.h"
 
 // serialization for std::variant
 namespace nlohmann {
@@ -248,6 +252,23 @@ void to_json(nlohmann::json &j, const Location &m) {
   j.emplace("uri", m.uri);
   j.emplace("range", m.range);
 }
+
+namespace extensions {
+void to_json(nlohmann::json &j, const DependencyEntry &m) {
+  j = nlohmann::json{};
+  j.emplace("id", m.id);
+  j.emplace("children", m.children);
+  j.emplace("content", m.content);
+}
+
+void to_json(nlohmann::json &j, const Dependencies &m) {
+  j = nlohmann::json{};
+  j.emplace("dependencies", m.dependencies);
+  if (m.range) {
+    j.emplace("range", m.range.value());
+  }
+}
+} // namespace extensions
 
 } // namespace protocol
 } // namespace lscpp

@@ -120,6 +120,14 @@ lsp_message_handler::handle_message(lsp_server &server,
       server.getTextDocumentService().didSave(params);
     } else if (j["method"] == "textDocument/willSave") {
       LOG_F(INFO, "Received textDocument/willSave");
+    } else if (j["method"] == "custom/dependencies") {
+      LOG_F(INFO, "Received custom/dependencies");
+      // protocol::TextDocumentPositionParams params{};
+      // j.at("params").get_to(params);
+      // auto result = server.getTextDocumentService().definition(params);
+      nlohmann::json null;
+      auto json_result = make_response_message(j["id"], null);
+      return json_result.dump();
     }
   }
   return std::nullopt;

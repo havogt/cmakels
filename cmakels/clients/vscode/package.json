@@ -53,6 +53,11 @@
 				"command": "cmakels.restart",
 				"title": "cmakels: Restart Language Server",
 				"description": "Restart the running instance of the language server"
+			},
+			{
+				"command": "cmakels.target_dependencies",
+				"title": "cmakels: Get target dependencies",
+				"description": "Get target dependencies"
 			}
 		]
 	},
@@ -72,5 +77,8 @@
 		"tslint": "^5.12.1",
 		"@types/node": "^10.12.21",
 		"@types/mocha": "^2.2.42"
-	}
+	},
+	"extensionDependencies": [
+		"joaompinto.vscode-graphviz"
+	]
 }
