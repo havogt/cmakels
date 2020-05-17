@@ -41,3 +41,19 @@ TEST(cmake_query, target_definition_location) {
   ASSERT_TRUE(query.target_definition_location(
       "a_target", support::filename_to_uri(root_dir) + "/CMakeLists.txt"));
 }
+
+TEST(cmake_query, target_dependencies) {
+  std::string root_dir =
+      test_cmake_query_config::projects_src_dir + "/project2";
+
+  cmake_query::cmake_query query{root_dir, "build"};
+
+  query.configure(test_cmake_query_config::cmakefiles_dir +
+                  "/project2/.cmakels");
+
+  auto deps = query.get_target_dependencies(
+      "a_target", support::filename_to_uri(root_dir) + "/CMakeLists.txt");
+
+  // ASSERT_TRUE(query.target_definition_location(
+  //     "a_target", support::filename_to_uri(root_dir) + "/CMakeLists.txt"));
+}

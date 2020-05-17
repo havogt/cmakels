@@ -40,3 +40,10 @@ if(BUILD_PLAYGROUND)
 endif()
 
 add_subdirectory(debugging)
+
+add_executable(debug_cmake_query debug_cmake_query.cpp)
+target_link_libraries(debug_cmake_query PRIVATE cmake_query)
+# target_link_libraries(debug_cmake_query PRIVATE listfile_parser)
+target_include_directories(debug_cmake_query PRIVATE ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}) # for config (only test_cmake_query)
+target_compile_features(debug_cmake_query PUBLIC cxx_std_17)
+target_include_directories(debug_cmake_query PRIVATE ${PROJECT_SOURCE_DIR}/src)

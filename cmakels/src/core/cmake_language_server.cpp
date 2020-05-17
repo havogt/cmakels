@@ -10,6 +10,8 @@
 #include "../support/filesystem.hpp"
 #include "../support/find_replace.hpp"
 #include "../support/uri_encode.hpp"
+#include "cmake_query.hpp"
+#include "lscpp/lsp_server.h"
 #include <cstdint>
 #include <iostream>
 #include <regex>
@@ -69,6 +71,10 @@ cmake_language_server::initialize(const protocol::InitializeParams &params) {
 }
 
 TextDocumentService &cmake_language_server::getTextDocumentService() {
+  return *this;
+}
+
+CustomMessageService &cmake_language_server::getCustomMessageService() {
   return *this;
 }
 
@@ -188,4 +194,49 @@ void cmake_language_server::didSave(
     protocol::DidSaveTextDocumentParams params) {
   query_->configure();
 }
+
+protocol::extensions::Dependencies cmake_language_server::dependencies(
+    protocol::TextDocumentPositionParams position) {
+  if (!open_files_[position.textDocument.uri])
+    return {};
+  else {
+    auto result = parser::get_function(
+        *(open_files_[position.textDocument.uri]),
+        {static_cast<std::size_t>(position.position.line),
+         static_cast<std::size_t>(position.position.character)});
+    auto selected_token = parser::get_selected_token(result);
+    auto ret = substitute_variables(selected_token, position.textDocument.uri,
+                                    *query_);
+    if (auto deps =
+            query_->get_target_dependencies(ret, position.textDocument.uri)) {
+      std::vector<protocol::extensions::DependencyNode> nodes;
+      std::vector<protocol::extensions::DependencyEdge> edges;
+      for (auto const &[parent, children] : *deps) {
+        nodes.push_back(protocol::extensions::DependencyNode{parent, ""});
+        for (auto const &[child, kind] : children) {
+          auto get_kind = [](auto kind) {
+            switch (kind) {
+            case cmake_query::dependency_kind::Private:
+              return protocol::extensions::DependencyEdgeKind::Dotted;
+              break;
+            case cmake_query::dependency_kind::Public:
+              return protocol::extensions::DependencyEdgeKind::Bold;
+              break;
+            case cmake_query::dependency_kind::Interface:
+              return protocol::extensions::DependencyEdgeKind::Dashed;
+              break;
+            default:
+              return protocol::extensions::DependencyEdgeKind::Dotted;
+            }
+          };
+          edges.push_back(protocol::extensions::DependencyEdge{parent, child,
+                                                               get_kind(kind)});
+        }
+      }
+      return {nodes, edges};
+    }
+  }
+  return {};
+} // namespace cmakels
+
 } // namespace cmakels
