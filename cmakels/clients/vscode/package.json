@@ -69,7 +69,8 @@
 		"test": "npm run compile && node ./node_modules/vscode/bin/test"
 	},
 	"dependencies": {
-		"vscode-languageclient": "^4.1.4"
+		"vscode-languageclient": "^4.1.4",
+		"viz.js": "^2.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.3.1",
@@ -78,7 +79,5 @@
 		"@types/node": "^10.12.21",
 		"@types/mocha": "^2.2.42"
 	},
-	"extensionDependencies": [
-		"joaompinto.vscode-graphviz"
-	]
+	"extensionDependencies": []
 }
