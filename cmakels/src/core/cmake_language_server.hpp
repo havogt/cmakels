@@ -10,6 +10,7 @@
 
 #include "../cmake_query/cmake_query.hpp"
 #include <lscpp/lsp_server.h>
+#include <lscpp/protocol/extensions/Dependencies.h>
 #include <map>
 #include <optional>
 #include <string>
@@ -17,7 +18,8 @@
 namespace cmakels {
 
 class cmake_language_server : public lscpp::lsp_server,
-                              lscpp::TextDocumentService {
+                              lscpp::TextDocumentService,
+                              lscpp::CustomMessageService {
 private:
   std::string root_path_;
   std::string build_directory_;
@@ -31,6 +33,7 @@ public:
   lscpp::protocol::InitializeResult
   initialize(const lscpp::protocol::InitializeParams &params) override;
   TextDocumentService &getTextDocumentService() override;
+  CustomMessageService &getCustomMessageService() override;
 
   lscpp::protocol::Hover
   hover(lscpp::protocol::TextDocumentPositionParams position) override;
@@ -48,5 +51,8 @@ public:
   void didClose(lscpp::protocol::DidCloseTextDocumentParams params) override;
 
   void didSave(lscpp::protocol::DidSaveTextDocumentParams params) override;
+
+  lscpp::protocol::extensions::Dependencies
+  dependencies(lscpp::protocol::TextDocumentPositionParams position) override;
 };
 } // namespace cmakels

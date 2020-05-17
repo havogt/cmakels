@@ -7,6 +7,7 @@
 
 #include "../support/filesystem.hpp"
 #include "cmake.h"
+#include <map>
 #include <optional>
 
 class cmMakefile;
@@ -19,6 +20,9 @@ struct location {
   std::string filename;
   long line;
 };
+
+enum class dependency_kind { Private, Interface, Public };
+using child = std::map<std::string, dependency_kind>;
 
 class cmake_query {
 private:
@@ -35,6 +39,8 @@ public:
                                                      std::string const &uri);
   std::optional<std::vector<std::string>>
   get_target_sources(std::string const &target, std::string const &uri);
+  std::optional<std::map<std::string, child>>
+  get_target_dependencies(std::string const &target, std::string const &uri);
   std::vector<std::string> get_target_names(std::string const &uri);
   std::string evaluate_variable(std::string const &name,
                                 std::string const &uri);

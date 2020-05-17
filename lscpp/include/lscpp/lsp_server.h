@@ -16,6 +16,8 @@
 #include "protocol/InitializeResult.h"
 #include "protocol/Location.h"
 #include "protocol/TextDocumentPositionParams.h"
+#include "protocol/extensions/Dependencies.h"
+#include <stdexcept>
 #include <variant>
 
 namespace lscpp {
@@ -45,6 +47,12 @@ public:
   virtual ~TextDocumentService(){};
 };
 
+class CustomMessageService {
+public:
+  virtual protocol::extensions::Dependencies
+  dependencies(protocol::TextDocumentPositionParams position) = 0;
+};
+
 /**
  * Language server implementations need to implement the required virtual
  * methods.
@@ -58,6 +66,9 @@ public:
   initialize(protocol::InitializeParams const &params) = 0;
 
   virtual TextDocumentService &getTextDocumentService() = 0;
+  virtual CustomMessageService &getCustomMessageService() {
+    throw std::runtime_error("not implemented");
+  }
 
   virtual ~lsp_server(){};
 };

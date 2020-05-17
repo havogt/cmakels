@@ -254,16 +254,26 @@ void to_json(nlohmann::json &j, const Location &m) {
 }
 
 namespace extensions {
-void to_json(nlohmann::json &j, const DependencyEntry &m) {
+void to_json(nlohmann::json &j, const DependencyEdge &m) {
+  j = nlohmann::json{};
+  j.emplace("from", m.from);
+  j.emplace("to", m.to);
+  j.emplace("kind", m.kind);
+}
+
+void to_json(nlohmann::json &j, const DependencyNode &m) {
   j = nlohmann::json{};
   j.emplace("id", m.id);
-  j.emplace("children", m.children);
   j.emplace("content", m.content);
 }
 
 void to_json(nlohmann::json &j, const Dependencies &m) {
   j = nlohmann::json{};
-  j.emplace("dependencies", m.dependencies);
+  j.emplace("nodes", m.nodes);
+  j.emplace("edges", m.edges);
+  if (m.root) {
+    j.emplace("root", m.root.value());
+  }
   if (m.range) {
     j.emplace("range", m.range.value());
   }

@@ -9,6 +9,7 @@
 #include "cmState.h"
 #include "cmStateSnapshot.h"
 #include "cmSystemTools.h"
+#include "cmTarget.h"
 #include "config.h"
 #include <algorithm>
 #include <cctype>
@@ -129,6 +130,58 @@ cmake_query::get_target_sources(std::string const &target,
   }
   return std::nullopt;
 }
+
+namespace {
+void insert_dependencies(std::map<std::string, child> &result, cmMakefile *mf,
+                         std::string const &target_string) {
+  auto tgt = mf->FindTargetToUse(target_string);
+  if (tgt) {
+    if (auto libs_string = tgt->GetProperty("LINK_LIBRARIES")) {
+      auto libs = cmSystemTools::ExpandedListArgument(libs_string, true);
+      for (auto const &lib : libs) {
+        result[target_string][lib] = dependency_kind::Private;
+
+        if (result.count(lib) == 0) {
+          // target not already processed (could happen in diamond dependencies)
+          insert_dependencies(result, mf, lib);
+        }
+      }
+    }
+
+    if (auto libs_string = tgt->GetProperty("INTERFACE_LINK_LIBRARIES")) {
+      auto libs = cmSystemTools::ExpandedListArgument(libs_string, true);
+      for (auto const &lib : libs) {
+        // we already have this target as private -> upgrade to public
+        if (result[target_string].count(lib) > 0)
+          result[target_string][lib] = dependency_kind::Public;
+        else
+          result[target_string][lib] = dependency_kind::Interface;
+
+        if (result.count(lib) == 0) {
+          // target not already processed (could happen in diamond
+          // dependencies)
+          insert_dependencies(result, mf, lib);
+        }
+      }
+    }
+  }
+}
+} // namespace
+
+std::optional<std::map<std::string, child>>
+cmake_query::get_target_dependencies(std::string const &target,
+                                     std::string const &uri) {
+  auto mf = get_makefile(uri);
+  if (mf) {
+    auto tgt = mf->FindTargetToUse(target);
+    if (tgt) {
+      std::map<std::string, child> result;
+      insert_dependencies(result, mf, target);
+      return result;
+    }
+  }
+  return std::nullopt;
+} // namespace cmakels::cmake_query
 
 std::vector<std::string> cmake_query::get_target_names(std::string const &uri) {
   auto mf = get_makefile(uri);

@@ -8,37 +8,71 @@
 #include "../Range.h"
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace lscpp {
 namespace protocol {
 namespace extensions {
 
-struct DependencyEntry {
+using DependencyNodeId = std::variant<int, std::string>;
+
+enum class DependencyEdgeKind { Solid = 1, Dashed = 2, Dotted = 3, Bold = 4 };
+
+/**
+ * An edge in the dependency graph
+ */
+struct DependencyEdge {
+  /**
+   * Parent
+   */
+  DependencyNodeId from;
+
+  /**
+   * Child
+   */
+  DependencyNodeId to;
+
+  /**
+   * Edge kind
+   */
+  DependencyEdgeKind kind;
+};
+
+/**
+ * A node in the dependency graph
+ */
+struct DependencyNode {
   /**
    * Identifier of the node
    */
-  std::string id;
-  // TODO  string | number;
-
-  /**
-   * List of children, identified by `id`.
-   */
-  std::vector<std::string> children;
-  // TODO string[] | number[];
+  DependencyNodeId id;
 
   /**
    * The node's content.
    */
-  std::string content;
-  // TODO MarkupContent
+  std::string content; // TODO
+                       // MarkupContent content;
 };
 
+/**
+ * The result of a dependency request.
+ */
 struct Dependencies {
   /**
-   * The dependency graph as a list of `DependencyEntry`ies
+   * The dependency graph as a list of `DependencyNode`s ...
    */
-  std::vector<DependencyEntry> dependencies;
+  std::vector<DependencyNode> nodes;
+
+  /**
+   * ... and a list of edges between nodes.
+   */
+  std::vector<DependencyEdge> edges;
+
+  /**
+   * An optional root, identifies the root node, if any.
+   */
+  std::optional<DependencyNodeId> root;
 
   /**
    * An optional range is a range inside a text document

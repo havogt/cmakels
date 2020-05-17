@@ -31,6 +31,17 @@ nlohmann::json make_notification_message(std::string const &msg) {
   //  {"parameters", {"type", "3"}, {"message", msg}} };
   return j;
 }
+
+// TODO remove
+nlohmann::json make_custom_message(std::string const &msg) {
+  nlohmann::json j{{"jsonrpc", "2.0"}, {"method", "custom/message"}};
+  nlohmann::json params{};
+  params.emplace("type", 3);
+  params.emplace("message", msg);
+  j.emplace("params", params);
+  //  {"parameters", {"type", "3"}, {"message", msg}} };
+  return j;
+}
 } // namespace
 
 std::optional<std::string>
@@ -56,7 +67,7 @@ lsp_message_handler::handle_message(lsp_server &server,
       exit(1);
     } else {
       ready_ = true;
-      return make_notification_message("I got initialized!").dump();
+      return make_custom_message("I got initialized!").dump();
       // auto init_params = parse_initialize_params(j["params"]);
       // auto init_result = server_.initialize(init_params);
       // // nlohmann::json json_result = init_result.json();
@@ -122,11 +133,10 @@ lsp_message_handler::handle_message(lsp_server &server,
       LOG_F(INFO, "Received textDocument/willSave");
     } else if (j["method"] == "custom/dependencies") {
       LOG_F(INFO, "Received custom/dependencies");
-      // protocol::TextDocumentPositionParams params{};
-      // j.at("params").get_to(params);
-      // auto result = server.getTextDocumentService().definition(params);
-      nlohmann::json null;
-      auto json_result = make_response_message(j["id"], null);
+      protocol::TextDocumentPositionParams params{};
+      j.at("params").get_to(params);
+      auto result = server.getCustomMessageService().dependencies(params);
+      auto json_result = make_response_message(j["id"], result);
       return json_result.dump();
     }
   }
