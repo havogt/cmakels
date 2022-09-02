@@ -9,6 +9,7 @@
 #include <loguru.hpp>
 
 #include "lscpp/protocol/CompletionItem.h"
+#include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidChangeTextDocumentParams.h"
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
