@@ -1,10 +1,10 @@
-#include "../external/json.hpp"
-#include "../src/lsp_header.h" //TODO
-#include "../src/protocol_serializer/serializer.h"
+// #include "../external/json.hpp"
+#include "lscpp/lsp_header.h" //TODO
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/InitializeResult.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/transporter.h"
+#include "messages.h"
 #include <chrono>
 #include <functional>
 #include <future>
@@ -15,25 +15,16 @@
 namespace lscpp::experimental {
 namespace prot = lscpp::protocol;
 namespace {
-prot::InitializeParams parse_initialize_params(nlohmann::json const &j) {
-  return j.get<prot::InitializeParams>();
-}
+// prot::InitializeParams parse_initialize_params(nlohmann::json const &j) {
+//   return j.get<prot::InitializeParams>();
+// }
 
-template <typename Result>
-nlohmann::json make_response_message(int id, Result const &result) {
-  nlohmann::json j{{"jsonrpc", "2.0"}, {"id", id}, {"result", result}};
-  return j;
-}
+// template <typename Result>
+// nlohmann::json make_response_message(int id, Result const &result) {
+//   nlohmann::json j{{"jsonrpc", "2.0"}, {"id", id}, {"result", result}};
+//   return j;
+// }
 
-nlohmann::json make_notification_message(std::string const &msg) {
-  nlohmann::json j{{"jsonrpc", "2.0"}, {"method", "window/showMessage"}};
-  nlohmann::json params{};
-  params.emplace("type", 3);
-  params.emplace("message", msg);
-  j.emplace("params", params);
-  //  {"parameters", {"type", "3"}, {"message", msg}} };
-  return j;
-}
 } // namespace
 
 struct not_implemented {};
@@ -98,26 +89,31 @@ template <class Server>
 std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
                                                 Server &server,
                                                 std::string const &request) {
-  nlohmann::json j = nlohmann::json::parse(request);
+  // nlohmann::json j = nlohmann::json::parse(request);
+  auto r = parse_request(request);
+  auto method = r.type;
+  auto id = r.id;
   if (!hndlr.initialized_) {
-    if (j["method"] != "initialize") {
+    if (method != "initialize") {
       //   LOG_F(INFO, "Expected initialize request");
       exit(1);
     } else {
-      hndlr.initialized_ = true;
-      auto init_params = parse_initialize_params(j["params"]);
-      auto init_result = lscpp_handle_initialize(server, init_params);
-      // nlohmann::json json_result = init_result.json();
-      auto json_result = make_response_message(j["id"], init_result);
-      return json_result.dump();
+      auto init_result = lscpp_handle_initialize(
+          server, std::any_cast<protocol::InitializeParams>(r.data));
+      return initialize_response(id, init_result);
+      // hndlr.initialized_ = true;
+      // auto init_params = parse_initialize_params(j["params"]);
+      // // nlohmann::json json_result = init_result.json();
+      // auto json_result = make_response_message(j["id"], init_result);
+      // return json_result.dump();
     }
   } else if (!hndlr.ready_) {
-    if (j["method"] != "initialized") {
+    if (method != "initialized") {
       //   LOG_F(INFO, "Expected initialized request");
       exit(1);
     } else {
       hndlr.ready_ = true;
-      return make_notification_message("I got initialized!").dump();
+      return notification_message("I got initialized!");
       // auto init_params = parse_initialize_params(j["params"]);
       // auto init_result = server_.initialize(init_params);
       // // nlohmann::json json_result = init_result.json();
@@ -125,7 +121,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
       // return json_result.dump();
     }
   } else if (hndlr.shutdown_) {
-    if (j["method"] == "exit") {
+    if (method == "exit") {
       exit(0); // TODO give the user the chance to do something, i.e. call a
                // virtual method
     } else {
@@ -133,20 +129,19 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
       exit(1);
     }
   } else {
-    if (j["method"] == "shutdown") {
+    if (method == "shutdown") {
       hndlr.shutdown_ = true;
-      nlohmann::json j_null;
-      auto json_result = make_response_message(j["id"], j_null);
-      return json_result.dump();
-    } else if (j["method"] == "textDocument/hover") {
+      return shutdown_response(id);
+    } else if (method == "textDocument/hover") {
       if constexpr (has_hover<Server>) {
         //   LOG_F(INFO, "Received textDocument/hover");
-        protocol::TextDocumentPositionParams params;
-        j.at("params").get_to(params);
-        //   auto result = server.getTextDocumentService().hover(params);
-        auto result = lscpp_handle_hover(server, params);
-        auto json_result = make_response_message(j["id"], result);
-        return json_result.dump();
+        // protocol::TextDocumentPositionParams params;
+        // j.at("params").get_to(params);
+
+        auto result = lscpp_handle_hover(
+            server,
+            std::any_cast<protocol::TextDocumentPositionParams>(r.data));
+        return hover_response(id, result);
       } else {
         exit(1);
       }
