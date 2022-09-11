@@ -27,22 +27,14 @@ struct lscpp_message_handler {
   bool shutdown_ = false;
 };
 
-template <class Server>
-protocol::InitializeResult
-lscpp_handle_initialize(Server &server,
-                        protocol::InitializeParams const &init_params);
-
-// default
-template <class Server>
-protocol::InitializeResult
-lscpp_handle_request_initialize(Server &server,
-                                protocol::InitializeParams const &init_params) {
-
-  return lscpp_handle_initialize(server, init_params);
-}
+// template <class Server>
+// protocol::InitializeResult
+// lscpp_handle_initialize(Server &server,
+//                         protocol::InitializeParams const &init_params);
 
 not_implemented lscpp_get_message_handler(...);
 
+not_implemented lscpp_handle_initialize(...);
 not_implemented lscpp_handle_hover(...);
 
 not_implemented lscpp_handle_did_open(...);
@@ -94,6 +86,49 @@ constexpr bool has_text_document_sync =
     has_text_document_sync_impl<Server>::value;
 
 template <class Server>
+protocol::InitializeResult lscpp_handle_initialize_default(
+    Server &server_, lscpp::protocol::InitializeParams const &init_params) {
+
+  using namespace lscpp;
+  protocol::ServerCapabilities capabilites;
+  capabilites.hoverProvider = experimental::has_hover<Server>;
+  capabilites.completionProvider = protocol::CompletionOptions{};
+  capabilites.definitionProvider = false;
+  protocol::TextDocumentSyncOptions sync;
+  sync.openClose = experimental::has_text_document_sync<Server>;
+  sync.change = protocol::TextDocumentSyncKind::Full;
+  capabilites.textDocumentSync = sync;
+  protocol::InitializeResult result{capabilites};
+  return result;
+}
+
+template <class Server>
+std::enable_if_t<
+    std::is_same_v<decltype(lscpp_handle_initialize(
+                       std::declval<Server &>(),
+                       std::declval<protocol::InitializeParams>())),
+                   not_implemented>,
+    protocol::InitializeResult>
+handle_initialize(Server &server,
+                  protocol::InitializeParams const &init_params) {
+
+  return lscpp_handle_initialize_default(server, init_params);
+}
+
+template <class Server>
+std::enable_if_t<
+    !std::is_same_v<decltype(lscpp_handle_initialize(
+                        std::declval<Server &>(),
+                        std::declval<protocol::InitializeParams>())),
+                    not_implemented>,
+    protocol::InitializeResult>
+handle_initialize(Server &server,
+                  protocol::InitializeParams const &init_params) {
+
+  return lscpp_handle_initialize(server, init_params);
+}
+
+template <class Server>
 std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
                                                 Server &server,
                                                 std::string const &request) {
@@ -107,7 +142,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
     } else {
       auto r = std::get<request_message>(message.data);
       auto id = r.id;
-      auto init_result = lscpp_handle_initialize(
+      auto init_result = handle_initialize(
           server, std::any_cast<protocol::InitializeParams>(r.params));
       hndlr.initialized_ = true;
       return initialize_response(id, init_result);
@@ -230,7 +265,6 @@ void launch(Server &&server, transporter &&transporter_) {
         continue;
       }
       auto msg = transporter_.read_message(header.content_length);
-      std::cerr << "message:" << msg << std::endl;
       //   LOG_F(INFO, "msg: '%s'", msg.c_str());
 
       //   auto result = message_handler.handle_message(server, msg);

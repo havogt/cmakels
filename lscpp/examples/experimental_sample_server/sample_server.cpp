@@ -18,25 +18,22 @@
 
 namespace my_lsp_server {
 struct server : lscpp::experimental::server_with_default_handler {
-  // lscpp::experimental::lscpp_message_handler handler_;
 
-  friend auto lscpp_handle_initialize(
-      server &server_, lscpp::protocol::InitializeParams const &init_params) {
+  // friend lscpp::protocol::InitializeResult lscpp_handle_initialize(
+  //     server &server_, lscpp::protocol::InitializeParams const &init_params)
+  //     {
 
-    using namespace lscpp;
-    protocol::ServerCapabilities capabilites;
-    capabilites.hoverProvider = experimental::has_hover<server>;
-    capabilites.completionProvider = protocol::CompletionOptions{};
-    capabilites.definitionProvider = false;
-    protocol::TextDocumentSyncOptions sync;
-    sync.openClose = experimental::has_text_document_sync<server>;
-    sync.change = protocol::TextDocumentSyncKind::Full;
-    capabilites.textDocumentSync = sync;
-    protocol::InitializeResult result{capabilites};
-    return result;
-  }
-  // friend auto &lscpp_get_message_handler(server &server_) {
-  //   return server_.handler_;
+  //   using namespace lscpp;
+  //   protocol::ServerCapabilities capabilites;
+  //   capabilites.hoverProvider = false; // experimental::has_hover<server>;
+  //   capabilites.completionProvider = protocol::CompletionOptions{};
+  //   capabilites.definitionProvider = false;
+  //   protocol::TextDocumentSyncOptions sync;
+  //   sync.openClose = experimental::has_text_document_sync<server>;
+  //   sync.change = protocol::TextDocumentSyncKind::Full;
+  //   capabilites.textDocumentSync = sync;
+  //   protocol::InitializeResult result{capabilites};
+  //   return result;
   // }
 
   friend lscpp::protocol::Hover
