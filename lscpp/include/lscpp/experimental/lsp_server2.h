@@ -50,17 +50,53 @@ not_implemented lscpp_handle_did_change(...);
 not_implemented lscpp_handle_did_close(...);
 
 template <class Server>
-constexpr bool has_hover = !std::is_same_v<
-    decltype(lscpp_handle_hover(
-        std::declval<Server &>(),
-        std::declval<protocol::TextDocumentPositionParams const &>())),
-    not_implemented>;
+constexpr bool has_hover =
+    !std::is_same_v<decltype(lscpp_handle_hover(
+                        std::declval<Server &>(),
+                        std::declval<protocol::TextDocumentPositionParams>())),
+                    not_implemented>;
+
+template <class Server>
+constexpr bool has_did_open =
+    !std::is_same_v<decltype(lscpp_handle_did_open(
+                        std::declval<Server &>(),
+                        std::declval<protocol::DidOpenTextDocumentParams>())),
+                    not_implemented>;
+
+template <class Server>
+constexpr bool has_did_change =
+    !std::is_same_v<decltype(lscpp_handle_did_change(
+                        std::declval<Server &>(),
+                        std::declval<protocol::DidChangeTextDocumentParams>())),
+                    not_implemented>;
+
+template <class Server>
+constexpr bool has_did_close =
+    !std::is_same_v<decltype(lscpp_handle_did_close(
+                        std::declval<Server &>(),
+                        std::declval<protocol::DidCloseTextDocumentParams>())),
+                    not_implemented>;
+
+template <class Server> struct has_text_document_sync_impl {
+  static_assert((has_did_open<Server> && has_did_change<Server> &&
+                 has_did_close<Server>) ||
+                    (!has_did_open<Server> && !has_did_change<Server> &&
+                     !has_did_close<Server>),
+                "Either all or none of `lscpp_handle_did_open`, "
+                "`lscpp_handle_did_change` and `lscpp_handle_did_close` need "
+                "to be implemented.");
+  static constexpr bool value =
+      has_did_open<Server> && has_did_change<Server> && has_did_close<Server>;
+};
+
+template <class Server>
+constexpr bool has_text_document_sync =
+    has_text_document_sync_impl<Server>::value;
 
 template <class Server>
 std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
                                                 Server &server,
                                                 std::string const &request) {
-  // nlohmann::json j = nlohmann::json::parse(request);
   auto message = parse_request(request);
   auto method = message.method;
 

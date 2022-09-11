@@ -29,7 +29,7 @@ struct server : lscpp::experimental::server_with_default_handler {
     capabilites.completionProvider = protocol::CompletionOptions{};
     capabilites.definitionProvider = false;
     protocol::TextDocumentSyncOptions sync;
-    sync.openClose = true;
+    sync.openClose = experimental::has_text_document_sync<server>;
     sync.change = protocol::TextDocumentSyncKind::Full;
     capabilites.textDocumentSync = sync;
     protocol::InitializeResult result{capabilites};
