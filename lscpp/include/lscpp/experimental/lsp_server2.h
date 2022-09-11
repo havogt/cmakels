@@ -1,5 +1,9 @@
 // #include "../external/json.hpp"
 #include "lscpp/lsp_header.h" //TODO
+#include "lscpp/protocol/DidChangeTextDocumentParams.h"
+#include "lscpp/protocol/DidCloseTextDocumentParams.h"
+#include "lscpp/protocol/DidOpenTextDocumentParams.h"
+#include "lscpp/protocol/DidSaveTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/InitializeResult.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
@@ -8,24 +12,12 @@
 #include <chrono>
 #include <functional>
 #include <future>
+#include <iostream> // TODO remove
 #include <sstream>
 #include <string>
 #include <thread>
 
 namespace lscpp::experimental {
-namespace prot = lscpp::protocol;
-namespace {
-// prot::InitializeParams parse_initialize_params(nlohmann::json const &j) {
-//   return j.get<prot::InitializeParams>();
-// }
-
-// template <typename Result>
-// nlohmann::json make_response_message(int id, Result const &result) {
-//   nlohmann::json j{{"jsonrpc", "2.0"}, {"id", id}, {"result", result}};
-//   return j;
-// }
-
-} // namespace
 
 struct not_implemented {};
 
@@ -36,15 +28,15 @@ struct lscpp_message_handler {
 };
 
 template <class Server>
-prot::InitializeResult
+protocol::InitializeResult
 lscpp_handle_initialize(Server &server,
-                        prot::InitializeParams const &init_params);
+                        protocol::InitializeParams const &init_params);
 
 // default
 template <class Server>
-prot::InitializeResult
+protocol::InitializeResult
 lscpp_handle_request_initialize(Server &server,
-                                prot::InitializeParams const &init_params) {
+                                protocol::InitializeParams const &init_params) {
 
   return lscpp_handle_initialize(server, init_params);
 }
@@ -53,55 +45,36 @@ not_implemented lscpp_get_message_handler(...);
 
 not_implemented lscpp_handle_hover(...);
 
-// template <class Server,
-//           class Res = decltype(lscpp_handle_hover(
-//               std::declval<Server &>(),
-//               std::declval<prot::TextDocumentPositionParams const &>()))>
-// std::enable_if_t<std::is_same_v<Res, not_implemented>, prot::Hover>
-// lscpp_handle_hover_dispatch(Server &server,
-//                             prot::TextDocumentPositionParams params) {
-//   static_assert(sizeof(Server) < 0, "hover not implemented");
-// }
+not_implemented lscpp_handle_did_open(...);
+not_implemented lscpp_handle_did_change(...);
+not_implemented lscpp_handle_did_close(...);
 
 template <class Server>
 constexpr bool has_hover = !std::is_same_v<
     decltype(lscpp_handle_hover(
         std::declval<Server &>(),
-        std::declval<prot::TextDocumentPositionParams const &>())),
+        std::declval<protocol::TextDocumentPositionParams const &>())),
     not_implemented>;
-
-// template <class Server>
-// auto lscpp_handle_hover_dispatch(Server &server,
-//                                  prot::TextDocumentPositionParams params) {
-//   return lscpp_handle_hover(server, params);
-// }
-// template <class Server,
-//           class Res = decltype(lscpp_handle_hover(
-//               std::declval<Server &>(),
-//               std::declval<prot::TextDocumentPositionParams const &>()))>
-// std::enable_if_t<!std::is_same_v<Res, not_implemented>, Res>
-// lscpp_handle_hover_dispatch(Server &server,
-//                             prot::TextDocumentPositionParams params) {
-//   return lscpp_handle_hover(server, params);
-// }
 
 template <class Server>
 std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
                                                 Server &server,
                                                 std::string const &request) {
   // nlohmann::json j = nlohmann::json::parse(request);
-  auto r = parse_request(request);
-  auto method = r.type;
-  auto id = r.id;
+  auto message = parse_request(request);
+  auto method = message.method;
+
   if (!hndlr.initialized_) {
     if (method != "initialize") {
       //   LOG_F(INFO, "Expected initialize request");
       exit(1);
     } else {
+      auto r = std::get<request_message>(message.data);
+      auto id = r.id;
       auto init_result = lscpp_handle_initialize(
-          server, std::any_cast<protocol::InitializeParams>(r.data));
+          server, std::any_cast<protocol::InitializeParams>(r.params));
+      hndlr.initialized_ = true;
       return initialize_response(id, init_result);
-      // hndlr.initialized_ = true;
       // auto init_params = parse_initialize_params(j["params"]);
       // // nlohmann::json json_result = init_result.json();
       // auto json_result = make_response_message(j["id"], init_result);
@@ -113,7 +86,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
       exit(1);
     } else {
       hndlr.ready_ = true;
-      return notification_message("I got initialized!");
+      return make_notification_message("I got initialized!");
       // auto init_params = parse_initialize_params(j["params"]);
       // auto init_result = server_.initialize(init_params);
       // // nlohmann::json json_result = init_result.json();
@@ -131,20 +104,40 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
   } else {
     if (method == "shutdown") {
       hndlr.shutdown_ = true;
-      return shutdown_response(id);
+      auto r = std::get<request_message>(message.data);
+      return shutdown_response(r.id);
     } else if (method == "textDocument/hover") {
       if constexpr (has_hover<Server>) {
-        //   LOG_F(INFO, "Received textDocument/hover");
-        // protocol::TextDocumentPositionParams params;
-        // j.at("params").get_to(params);
-
+        auto r = std::get<request_message>(message.data);
+        auto id = r.id;
         auto result = lscpp_handle_hover(
             server,
-            std::any_cast<protocol::TextDocumentPositionParams>(r.data));
+            std::any_cast<protocol::TextDocumentPositionParams>(r.params));
         return hover_response(id, result);
       } else {
         exit(1);
       }
+    } else if (method == "textDocument/didOpen") {
+      auto r = std::get<notification_message>(message.data);
+      auto params =
+          std::any_cast<protocol::DidOpenTextDocumentParams>(r.params);
+      lscpp_handle_did_open(server, params);
+      return {};
+    } else if (method == "textDocument/didChange") {
+      lscpp_handle_did_change(
+          server, std::any_cast<protocol::DidChangeTextDocumentParams>(
+                      std::get<notification_message>(message.data).params));
+      return {};
+    } else if (method == "textDocument/didClose") {
+      lscpp_handle_did_close(
+          server, std::any_cast<protocol::DidCloseTextDocumentParams>(
+                      std::get<notification_message>(message.data).params));
+      return {};
+    } else if (method == "textDocument/didSave") {
+      lscpp_handle_did_save(
+          server, std::any_cast<protocol::DidSaveTextDocumentParams>(
+                      std::get<notification_message>(message.data).params));
+      return {};
     }
     exit(1);
   }
@@ -186,7 +179,7 @@ void launch(Server &&server, transporter &&transporter_) {
   //   auto &message_handler = lscpp_get_message_handler(server);
 
   // setup logger
-  //   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
+  // loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
   //   loguru::g_colorlogtostderr = false;
   //   if (config.logger.filename.size() > 0)
   //     loguru::add_file(config.logger.filename.c_str(), loguru::Truncate,
@@ -201,6 +194,7 @@ void launch(Server &&server, transporter &&transporter_) {
         continue;
       }
       auto msg = transporter_.read_message(header.content_length);
+      std::cerr << "message:" << msg << std::endl;
       //   LOG_F(INFO, "msg: '%s'", msg.c_str());
 
       //   auto result = message_handler.handle_message(server, msg);

@@ -1,6 +1,9 @@
 #include "../external/json.hpp"
 #include "../protocol_serializer/serializer.h"
+#include "lscpp/protocol/DidOpenTextDocumentParams.h"
+#include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
+#include <iostream> // TODO remove
 #include <lscpp/experimental/messages.h>
 
 namespace lscpp {
@@ -13,7 +16,7 @@ nlohmann::json make_response_message(int id, Result const &result) {
 }
 } // namespace
 
-std::string notification_message(std::string const &msg) {
+std::string make_notification_message(std::string const &msg) {
   nlohmann::json j{{"jsonrpc", "2.0"}, {"method", "window/showMessage"}};
   nlohmann::json params{};
   params.emplace("type", 3);
@@ -35,24 +38,47 @@ std::string shutdown_response(int id) {
   return make_response_message(id, j_null);
 }
 
-request parse_request(std::string request) {
+namespace {
+template <class Params> auto as_request_message(nlohmann::json const &j) {
+  return message{j["method"],
+                 request_message{j["id"], j["params"].get<Params>()}};
+}
+auto as_request_message(nlohmann::json const &j) {
+  return message{j["method"], request_message{j["id"]}};
+}
+template <class Params> auto as_notification_message(nlohmann::json const &j) {
+  return message{j["method"], notification_message{j["params"].get<Params>()}};
+}
+auto as_notification_message(nlohmann::json const &j) {
+  return message{j["method"], notification_message{}};
+}
+} // namespace
+
+message parse_request(std::string request) {
   nlohmann::json j = nlohmann::json::parse(request);
   auto const &method = j["method"];
-  auto const &params = j["params"];
-  int id = j["id"];
 
   if (method == "initialize") {
-    return {method, id, params.get<protocol::InitializeParams>()};
+    return as_request_message<protocol::InitializeParams>(j);
   } else if (method == "initialized") {
-    return {method, id};
+    return as_notification_message(j);
   } else if (method == "exit") {
-    return {method, id};
+    return as_notification_message(j);
   } else if (method == "shutdown") {
-    return {method, id};
+    return as_request_message(j);
   } else if (method == "textDocument/hover") {
-    return {method, id, params.get<protocol::TextDocumentPositionParams>()};
+    return as_request_message<protocol::TextDocumentPositionParams>(j);
+  } else if (method == "textDocument/didOpen") {
+    return as_notification_message<protocol::DidOpenTextDocumentParams>(j);
+  } else if (method == "textDocument/didChange") {
+    return as_notification_message<protocol::DidChangeTextDocumentParams>(j);
+  } else if (method == "textDocument/didClose") {
+    return as_notification_message<protocol::DidCloseTextDocumentParams>(j);
+  } else if (method == "textDocument/didSave") {
+    return as_notification_message<protocol::DidSaveTextDocumentParams>(j);
+    // } else if (method == "textDocument/willSave") {
+    //   TODO
   }
-  // TODO error
 }
 
 } // namespace lscpp

@@ -8,12 +8,13 @@
 // #include <lscpp/lsp_launcher.h>
 // #include <lscpp/lsp_server.h>
 
+#include "lscpp/protocol/DidCloseTextDocumentParams.h"
+#include "lscpp/protocol/DidOpenTextDocumentParams.h"
+#include "lscpp/protocol/DidSaveTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/stdio_transporter.h"
 #include <lscpp/experimental/lsp_server2.h>
-
-namespace lscpp::experimental {} // namespace lscpp::experimental
 
 namespace my_lsp_server {
 struct server : lscpp::experimental::server_with_default_handler {
@@ -24,9 +25,9 @@ struct server : lscpp::experimental::server_with_default_handler {
 
     using namespace lscpp;
     protocol::ServerCapabilities capabilites;
-    capabilites.hoverProvider = true;
+    capabilites.hoverProvider = experimental::has_hover<server>;
     capabilites.completionProvider = protocol::CompletionOptions{};
-    capabilites.definitionProvider = true;
+    capabilites.definitionProvider = false;
     protocol::TextDocumentSyncOptions sync;
     sync.openClose = true;
     sync.change = protocol::TextDocumentSyncKind::Full;
@@ -40,8 +41,20 @@ struct server : lscpp::experimental::server_with_default_handler {
 
   friend lscpp::protocol::Hover
   lscpp_handle_hover(server &, lscpp::protocol::TextDocumentPositionParams) {
-    return {};
+    return {"bla"};
   }
+  friend void
+  lscpp_handle_did_open(server &, lscpp::protocol::DidOpenTextDocumentParams) {
+    std::cerr << "nothing to do" << std::endl;
+  }
+  friend void
+  lscpp_handle_did_change(server &,
+                          lscpp::protocol::DidChangeTextDocumentParams) {}
+  friend void
+  lscpp_handle_did_close(server &,
+                         lscpp::protocol::DidCloseTextDocumentParams) {}
+  friend void
+  lscpp_handle_did_save(server &, lscpp::protocol::DidSaveTextDocumentParams) {}
 };
 
 // class my_lsp_server : public lsp_server, TextDocumentService {
