@@ -8,10 +8,15 @@
 // #include <lscpp/lsp_launcher.h>
 // #include <lscpp/lsp_server.h>
 
+#include "lscpp/protocol/CompletionItem.h"
+#include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/DidSaveTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
+#include "lscpp/protocol/Location.h"
+#include "lscpp/protocol/Position.h"
+#include "lscpp/protocol/Range.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/stdio_transporter.h"
 #include <lscpp/experimental/lsp_server2.h>
@@ -40,10 +45,21 @@ struct server : lscpp::experimental::server_with_default_handler {
   lscpp_handle_hover(server &, lscpp::protocol::TextDocumentPositionParams) {
     return {"bla"};
   }
-  friend void
-  lscpp_handle_did_open(server &, lscpp::protocol::DidOpenTextDocumentParams) {
-    std::cerr << "nothing to do" << std::endl;
+  friend lscpp::protocol::Location
+  lscpp_handle_definition(server &,
+                          lscpp::protocol::TextDocumentPositionParams params) {
+    return lscpp::protocol::Location{
+        params.textDocument.uri,
+        lscpp::protocol::Range{lscpp::protocol::Position{1, 1},
+                               lscpp::protocol::Position{1, 5}}};
   }
+  friend std::vector<lscpp::protocol::CompletionItem>
+  lscpp_handle_completion(server &, lscpp::protocol::CompletionParams) {
+    return {lscpp::protocol::CompletionItem{"foo"},
+            lscpp::protocol::CompletionItem{"bar"}};
+  }
+  friend void
+  lscpp_handle_did_open(server &, lscpp::protocol::DidOpenTextDocumentParams) {}
   friend void
   lscpp_handle_did_change(server &,
                           lscpp::protocol::DidChangeTextDocumentParams) {}

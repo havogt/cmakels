@@ -1,11 +1,13 @@
 // #include "../external/json.hpp"
 #include "lscpp/lsp_header.h" //TODO
+#include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidChangeTextDocumentParams.h"
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/DidSaveTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/InitializeResult.h"
+#include "lscpp/protocol/Location.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/transporter.h"
 #include "messages.h"
@@ -13,6 +15,7 @@
 #include <functional>
 #include <future>
 #include <iostream> // TODO remove
+#include <optional>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -36,6 +39,8 @@ not_implemented lscpp_get_message_handler(...);
 
 not_implemented lscpp_handle_initialize(...);
 not_implemented lscpp_handle_hover(...);
+not_implemented lscpp_handle_defintion(...);
+not_implemented lscpp_handle_completion(...);
 
 not_implemented lscpp_handle_did_open(...);
 not_implemented lscpp_handle_did_change(...);
@@ -46,6 +51,19 @@ constexpr bool has_hover =
     !std::is_same_v<decltype(lscpp_handle_hover(
                         std::declval<Server &>(),
                         std::declval<protocol::TextDocumentPositionParams>())),
+                    not_implemented>;
+
+template <class Server>
+constexpr bool has_definition =
+    !std::is_same_v<decltype(lscpp_handle_definition(
+                        std::declval<Server &>(),
+                        std::declval<protocol::TextDocumentPositionParams>())),
+                    not_implemented>;
+template <class Server>
+constexpr bool has_completion =
+    !std::is_same_v<decltype(lscpp_handle_completion(
+                        std::declval<Server &>(),
+                        std::declval<protocol::CompletionParams>())),
                     not_implemented>;
 
 template <class Server>
@@ -89,13 +107,14 @@ template <class Server>
 protocol::InitializeResult lscpp_handle_initialize_default(
     Server &server_, lscpp::protocol::InitializeParams const &init_params) {
 
-  using namespace lscpp;
   protocol::ServerCapabilities capabilites;
-  capabilites.hoverProvider = experimental::has_hover<Server>;
-  capabilites.completionProvider = protocol::CompletionOptions{};
-  capabilites.definitionProvider = false;
+  capabilites.hoverProvider = has_hover<Server>;
+  if (has_completion<Server>) {
+    capabilites.completionProvider = protocol::CompletionOptions{};
+  }
+  capabilites.definitionProvider = has_definition<Server>;
   protocol::TextDocumentSyncOptions sync;
-  sync.openClose = experimental::has_text_document_sync<Server>;
+  sync.openClose = has_text_document_sync<Server>;
   sync.change = protocol::TextDocumentSyncKind::Full;
   capabilites.textDocumentSync = sync;
   protocol::InitializeResult result{capabilites};
@@ -185,6 +204,27 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
             server,
             std::any_cast<protocol::TextDocumentPositionParams>(r.params));
         return hover_response(id, result);
+      } else {
+        exit(1);
+      }
+    } else if (method == "textDocument/definition") {
+      if constexpr (has_definition<Server>) {
+        auto r = std::get<request_message>(message.data);
+        auto id = r.id;
+        auto result = lscpp_handle_definition(
+            server,
+            std::any_cast<protocol::TextDocumentPositionParams>(r.params));
+        return definition_response(id, result);
+      } else {
+        exit(1);
+      }
+    } else if (method == "textDocument/completion") {
+      if constexpr (has_completion<Server>) {
+        auto r = std::get<request_message>(message.data);
+        auto id = r.id;
+        auto result = lscpp_handle_completion(
+            server, std::any_cast<protocol::CompletionParams>(r.params));
+        return completion_response(id, result);
       } else {
         exit(1);
       }

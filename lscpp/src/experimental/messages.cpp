@@ -1,5 +1,7 @@
 #include "../external/json.hpp"
 #include "../protocol_serializer/serializer.h"
+#include "lscpp/protocol/CompletionItem.h"
+#include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
@@ -31,6 +33,13 @@ std::string initialize_response(int id,
   return make_response_message(id, result);
 }
 std::string hover_response(int id, protocol::Hover const &result) {
+  return make_response_message(id, result);
+}
+std::string definition_response(int id, protocol::Location const &result) {
+  return make_response_message(id, result);
+}
+std::string completion_response(
+    int id, std::variant<std::vector<protocol::CompletionItem>> const &result) {
   return make_response_message(id, result);
 }
 std::string shutdown_response(int id) {
@@ -68,6 +77,10 @@ message parse_request(std::string request) {
     return as_request_message(j);
   } else if (method == "textDocument/hover") {
     return as_request_message<protocol::TextDocumentPositionParams>(j);
+  } else if (method == "textDocument/definition") {
+    return as_request_message<protocol::TextDocumentPositionParams>(j);
+  } else if (method == "textDocument/completion") {
+    return as_request_message<protocol::CompletionParams>(j);
   } else if (method == "textDocument/didOpen") {
     return as_notification_message<protocol::DidOpenTextDocumentParams>(j);
   } else if (method == "textDocument/didChange") {
