@@ -24,14 +24,11 @@ struct message {
   std::variant<notification_message, request_message> data;
 };
 
+std::string response_message(int id);
+template <typename Result>
+std::string response_message(int id, Result const &result);
+
 void write_lsp_message(transporter &t, std::string const &content);
-std::string initialize_response(int id,
-                                protocol::InitializeResult const &result);
-std::string hover_response(int id, protocol::Hover const &result);
-std::string definition_response(int id, protocol::Location const &result);
-std::string completion_response(
-    int id, std::variant<std::vector<protocol::CompletionItem>> const &result);
-std::string shutdown_response(int id);
 std::string make_notification_message(std::string const &message);
 
 message parse_request(std::string);

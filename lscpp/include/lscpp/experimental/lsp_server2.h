@@ -159,7 +159,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
       auto init_result = handle_initialize(
           server, std::any_cast<protocol::InitializeParams>(r.params));
       hndlr.initialized_ = true;
-      return initialize_response(id, init_result);
+      return response_message(id, init_result);
     }
   } else if (!hndlr.ready_) {
     if (method != "initialized") {
@@ -180,7 +180,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
     if (method == "shutdown") {
       hndlr.shutdown_ = true;
       auto r = std::get<request_message>(message.data);
-      return shutdown_response(r.id);
+      return response_message(r.id);
     } else if (method == "textDocument/hover") {
       if constexpr (has_hover<Server>) {
         auto r = std::get<request_message>(message.data);
@@ -188,7 +188,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
         auto result = lscpp_handle_hover(
             server,
             std::any_cast<protocol::TextDocumentPositionParams>(r.params));
-        return hover_response(id, result);
+        return response_message(id, result);
       } else {
         exit(1);
       }
@@ -199,7 +199,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
         auto result = lscpp_handle_definition(
             server,
             std::any_cast<protocol::TextDocumentPositionParams>(r.params));
-        return definition_response(id, result);
+        return response_message(id, result);
       } else {
         exit(1);
       }
@@ -209,7 +209,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
         auto id = r.id;
         auto result = lscpp_handle_completion(
             server, std::any_cast<protocol::CompletionParams>(r.params));
-        return completion_response(id, result);
+        return response_message(id, result);
       } else {
         exit(1);
       }

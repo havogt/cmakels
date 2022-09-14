@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <lscpp/experimental/messages.h>
 
 #include "../external/json.hpp"
@@ -6,18 +7,11 @@
 #include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
+#include "lscpp/protocol/InitializeResult.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include <sstream>
 
 namespace lscpp::experimental {
-
-namespace {
-template <typename Result>
-nlohmann::json make_response_message(int id, Result const &result) {
-  nlohmann::json j{{"jsonrpc", "2.0"}, {"id", id}, {"result", result}};
-  return j.dump();
-}
-} // namespace
 
 void write_lsp_message(transporter &t, std::string const &content) {
   std::stringstream content_length;
@@ -39,24 +33,24 @@ std::string make_notification_message(std::string const &msg) {
   return j.dump();
 }
 
-std::string initialize_response(int id,
-                                protocol::InitializeResult const &result) {
-  return make_response_message(id, result);
+template <typename Result>
+std::string response_message(int id, Result const &result) {
+  return nlohmann::json{{"jsonrpc", "2.0"}, {"id", id}, {"result", result}}
+      .dump();
 }
-std::string hover_response(int id, protocol::Hover const &result) {
-  return make_response_message(id, result);
+
+std::string response_message(int id) {
+  return nlohmann::json{
+      {"jsonrpc", "2.0"}, {"id", id}, {"result", std::nullptr_t{}}}
+      .dump();
 }
-std::string definition_response(int id, protocol::Location const &result) {
-  return make_response_message(id, result);
-}
-std::string completion_response(
-    int id, std::variant<std::vector<protocol::CompletionItem>> const &result) {
-  return make_response_message(id, result);
-}
-std::string shutdown_response(int id) {
-  nlohmann::json j_null;
-  return make_response_message(id, j_null);
-}
+
+template std::string response_message(int id,
+                                      const protocol::InitializeResult &result);
+template std::string response_message(int id, const protocol::Hover &result);
+template std::string response_message(int id, const protocol::Location &result);
+template std::string
+response_message(int id, const std::vector<protocol::CompletionItem> &result);
 
 namespace {
 template <class Params> auto as_request_message(nlohmann::json const &j) {
