@@ -1,5 +1,6 @@
-// #include "../external/json.hpp"
-#include "lscpp/lsp_header.h" //TODO
+#pragma once
+
+#include "lscpp/lsp_header.h"
 #include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidChangeTextDocumentParams.h"
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
@@ -14,7 +15,6 @@
 #include <chrono>
 #include <functional>
 #include <future>
-#include <iostream> // TODO remove
 #include <optional>
 #include <sstream>
 #include <string>
@@ -29,11 +29,6 @@ struct lscpp_message_handler {
   bool ready_ = false;
   bool shutdown_ = false;
 };
-
-// template <class Server>
-// protocol::InitializeResult
-// lscpp_handle_initialize(Server &server,
-//                         protocol::InitializeParams const &init_params);
 
 not_implemented lscpp_get_message_handler(...);
 
@@ -165,10 +160,6 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
           server, std::any_cast<protocol::InitializeParams>(r.params));
       hndlr.initialized_ = true;
       return initialize_response(id, init_result);
-      // auto init_params = parse_initialize_params(j["params"]);
-      // // nlohmann::json json_result = init_result.json();
-      // auto json_result = make_response_message(j["id"], init_result);
-      // return json_result.dump();
     }
   } else if (!hndlr.ready_) {
     if (method != "initialized") {
@@ -177,16 +168,10 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
     } else {
       hndlr.ready_ = true;
       return make_notification_message("I got initialized!");
-      // auto init_params = parse_initialize_params(j["params"]);
-      // auto init_result = server_.initialize(init_params);
-      // // nlohmann::json json_result = init_result.json();
-      // auto json_result = make_response_message(j["id"], init_result);
-      // return json_result.dump();
     }
   } else if (hndlr.shutdown_) {
     if (method == "exit") {
-      exit(0); // TODO give the user the chance to do something, i.e. call a
-               // virtual method
+      exit(0); // TODO give the user the chance to do something
     } else {
       // TODO: send invalid request
       exit(1);
@@ -266,16 +251,6 @@ class server_with_default_handler {
     return server_.handler_;
   }
 };
-
-inline void write_lsp_message(transporter &t, std::string const &content) {
-  std::stringstream content_length;
-  content_length << "Content-Length: ";
-  content_length << content.size();
-  t.write_message(content_length.str(), true);
-  t.write_message("", true);
-
-  t.write_message(content);
-}
 
 template <class Server>
 void launch(Server &&server, transporter &&transporter_) {

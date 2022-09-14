@@ -1,3 +1,5 @@
+#include <lscpp/experimental/messages.h>
+
 #include "../external/json.hpp"
 #include "../protocol_serializer/serializer.h"
 #include "lscpp/protocol/CompletionItem.h"
@@ -5,10 +7,9 @@
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
-#include <iostream> // TODO remove
-#include <lscpp/experimental/messages.h>
+#include <sstream>
 
-namespace lscpp {
+namespace lscpp::experimental {
 
 namespace {
 template <typename Result>
@@ -17,6 +18,16 @@ nlohmann::json make_response_message(int id, Result const &result) {
   return j.dump();
 }
 } // namespace
+
+void write_lsp_message(transporter &t, std::string const &content) {
+  std::stringstream content_length;
+  content_length << "Content-Length: ";
+  content_length << content.size();
+  t.write_message(content_length.str(), true);
+  t.write_message("", true);
+
+  t.write_message(content);
+}
 
 std::string make_notification_message(std::string const &msg) {
   nlohmann::json j{{"jsonrpc", "2.0"}, {"method", "window/showMessage"}};
@@ -92,6 +103,7 @@ message parse_request(std::string request) {
     // } else if (method == "textDocument/willSave") {
     //   TODO
   }
+  assert(false); // unreachable
 }
 
-} // namespace lscpp
+} // namespace lscpp::experimental
