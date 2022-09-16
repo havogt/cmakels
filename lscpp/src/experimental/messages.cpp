@@ -1,15 +1,16 @@
 #include <cstddef>
-#include <lscpp/experimental/messages.h>
+#include <sstream>
 
 #include "../external/json.hpp"
 #include "../protocol_serializer/serializer.h"
+
+#include "lscpp/experimental/messages.h"
 #include "lscpp/protocol/CompletionItem.h"
 #include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/InitializeResult.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
-#include <sstream>
 
 namespace lscpp::experimental {
 
@@ -54,17 +55,16 @@ response_message(int id, const std::vector<protocol::CompletionItem> &result);
 
 namespace {
 template <class Params> auto as_request_message(nlohmann::json const &j) {
-  return message{j["method"],
-                 request_message{j["id"], j["params"].get<Params>()}};
+  return message{j["method"], j["id"], j["params"].get<Params>()};
 }
 auto as_request_message(nlohmann::json const &j) {
-  return message{j["method"], request_message{j["id"]}};
+  return message{j["method"], j["id"]};
 }
 template <class Params> auto as_notification_message(nlohmann::json const &j) {
-  return message{j["method"], notification_message{j["params"].get<Params>()}};
+  return message{j["method"], -1, j["params"].get<Params>()};
 }
 auto as_notification_message(nlohmann::json const &j) {
-  return message{j["method"], notification_message{}};
+  return message{j["method"], -1};
 }
 } // namespace
 

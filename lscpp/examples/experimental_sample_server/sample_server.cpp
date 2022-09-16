@@ -8,18 +8,20 @@
 // #include <lscpp/lsp_launcher.h>
 // #include <lscpp/lsp_server.h>
 
+#include <lscpp/experimental/lsp_server2.h>
+
 #include "lscpp/protocol/CompletionItem.h"
 #include "lscpp/protocol/CompletionParams.h"
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/DidSaveTextDocumentParams.h"
+#include "lscpp/protocol/Hover.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/Location.h"
 #include "lscpp/protocol/Position.h"
 #include "lscpp/protocol/Range.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/stdio_transporter.h"
-#include <lscpp/experimental/lsp_server2.h>
 
 namespace my_lsp_server {
 struct server : lscpp::experimental::server_with_default_handler {

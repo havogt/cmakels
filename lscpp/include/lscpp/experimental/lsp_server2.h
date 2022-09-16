@@ -142,22 +142,25 @@ handle_initialize(Server &server,
   return lscpp_handle_initialize(server, init_params);
 }
 
+template <class Params> Params get_params(message const &m) {
+  return std::any_cast<Params>(m.params);
+}
+
 template <class Server>
 std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
                                                 Server &server,
                                                 std::string const &request) {
   auto message = parse_request(request);
   auto method = message.method;
+  auto id = message.id;
 
   if (!hndlr.initialized_) {
     if (method != "initialize") {
       //   LOG_F(INFO, "Expected initialize request");
       exit(1);
     } else {
-      auto r = std::get<request_message>(message.data);
-      auto id = r.id;
       auto init_result = handle_initialize(
-          server, std::any_cast<protocol::InitializeParams>(r.params));
+          server, get_params<protocol::InitializeParams>(message));
       hndlr.initialized_ = true;
       return response_message(id, init_result);
     }
@@ -179,60 +182,48 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
   } else {
     if (method == "shutdown") {
       hndlr.shutdown_ = true;
-      auto r = std::get<request_message>(message.data);
-      return response_message(r.id);
+      return response_message(id);
     } else if (method == "textDocument/hover") {
       if constexpr (has_hover<Server>) {
-        auto r = std::get<request_message>(message.data);
-        auto id = r.id;
-        auto result = lscpp_handle_hover(
-            server,
-            std::any_cast<protocol::TextDocumentPositionParams>(r.params));
-        return response_message(id, result);
+        return response_message(
+            id, lscpp_handle_hover(
+                    server,
+                    get_params<protocol::TextDocumentPositionParams>(message)));
       } else {
         exit(1);
       }
     } else if (method == "textDocument/definition") {
       if constexpr (has_definition<Server>) {
-        auto r = std::get<request_message>(message.data);
-        auto id = r.id;
-        auto result = lscpp_handle_definition(
-            server,
-            std::any_cast<protocol::TextDocumentPositionParams>(r.params));
-        return response_message(id, result);
+        return response_message(
+            id, lscpp_handle_definition(
+                    server,
+                    get_params<protocol::TextDocumentPositionParams>(message)));
       } else {
         exit(1);
       }
     } else if (method == "textDocument/completion") {
       if constexpr (has_completion<Server>) {
-        auto r = std::get<request_message>(message.data);
-        auto id = r.id;
-        auto result = lscpp_handle_completion(
-            server, std::any_cast<protocol::CompletionParams>(r.params));
-        return response_message(id, result);
+        return response_message(
+            id, lscpp_handle_completion(
+                    server, get_params<protocol::CompletionParams>(message)));
       } else {
         exit(1);
       }
     } else if (method == "textDocument/didOpen") {
-      auto r = std::get<notification_message>(message.data);
-      auto params =
-          std::any_cast<protocol::DidOpenTextDocumentParams>(r.params);
-      lscpp_handle_did_open(server, params);
+      lscpp_handle_did_open(
+          server, get_params<protocol::DidOpenTextDocumentParams>(message));
       return {};
     } else if (method == "textDocument/didChange") {
       lscpp_handle_did_change(
-          server, std::any_cast<protocol::DidChangeTextDocumentParams>(
-                      std::get<notification_message>(message.data).params));
+          server, get_params<protocol::DidChangeTextDocumentParams>(message));
       return {};
     } else if (method == "textDocument/didClose") {
       lscpp_handle_did_close(
-          server, std::any_cast<protocol::DidCloseTextDocumentParams>(
-                      std::get<notification_message>(message.data).params));
+          server, get_params<protocol::DidCloseTextDocumentParams>(message));
       return {};
     } else if (method == "textDocument/didSave") {
       lscpp_handle_did_save(
-          server, std::any_cast<protocol::DidSaveTextDocumentParams>(
-                      std::get<notification_message>(message.data).params));
+          server, get_params<protocol::DidSaveTextDocumentParams>(message));
       return {};
     }
     exit(1);
@@ -244,6 +235,7 @@ auto lscpp_handle_message(Server &server, std::string const &request) {
   auto &message_handler = lscpp_get_message_handler(server);
   return lscpp_handle_message(message_handler, server, request);
 }
+
 class server_with_default_handler {
   lscpp_message_handler handler_;
 

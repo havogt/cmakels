@@ -1,27 +1,15 @@
 #pragma once
 
-#include "lscpp/protocol/CompletionItem.h"
-#include "lscpp/protocol/Hover.h"
-#include "lscpp/protocol/InitializeParams.h"
-#include "lscpp/protocol/InitializeResult.h"
-#include "lscpp/protocol/Location.h"
-#include "lscpp/transporter.h"
 #include <any>
 #include <string>
-#include <vector>
+
+#include "lscpp/transporter.h"
 
 namespace lscpp::experimental {
-struct notification_message {
-  std::any params;
-};
-struct request_message {
-  int id;
-  std::any params;
-};
-
 struct message {
   std::string method;
-  std::variant<notification_message, request_message> data;
+  int id;
+  std::any params; // variant?
 };
 
 std::string response_message(int id);
