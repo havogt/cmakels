@@ -12,6 +12,7 @@
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/transporter.h"
 #include "messages.h"
+#include <cassert>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -34,7 +35,7 @@ not_implemented lscpp_get_message_handler(...);
 
 not_implemented lscpp_handle_initialize(...);
 not_implemented lscpp_handle_hover(...);
-not_implemented lscpp_handle_defintion(...);
+not_implemented lscpp_handle_definition(...);
 not_implemented lscpp_handle_completion(...);
 
 not_implemented lscpp_handle_did_open(...);
@@ -142,8 +143,8 @@ handle_initialize(Server &server,
   return lscpp_handle_initialize(server, init_params);
 }
 
-template <class Params> Params get_params(message const &m) {
-  return std::any_cast<Params>(m.params);
+template <method_kind Kind> auto get_params(message const &m) {
+  return std::any_cast<to_params_t<Kind>>(m.params);
 }
 
 template <class Server>
@@ -155,17 +156,17 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
   auto id = message.id;
 
   if (!hndlr.initialized_) {
-    if (method != "initialize") {
+    if (method != method_kind::INITIALIZE) {
       //   LOG_F(INFO, "Expected initialize request");
       exit(1);
     } else {
       auto init_result = handle_initialize(
-          server, get_params<protocol::InitializeParams>(message));
+          server, get_params<method_kind::INITIALIZE>(message));
       hndlr.initialized_ = true;
       return response_message(id, init_result);
     }
   } else if (!hndlr.ready_) {
-    if (method != "initialized") {
+    if (method != method_kind::INITIALIZED) {
       //   LOG_F(INFO, "Expected initialized request");
       exit(1);
     } else {
@@ -173,58 +174,64 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
       return make_notification_message("I got initialized!");
     }
   } else if (hndlr.shutdown_) {
-    if (method == "exit") {
+    if (method == method_kind::EXIT) {
       exit(0); // TODO give the user the chance to do something
     } else {
       // TODO: send invalid request
       exit(1);
     }
   } else {
-    if (method == "shutdown") {
+    switch (method) {
+    case method_kind::SHUTDOWN:
       hndlr.shutdown_ = true;
       return response_message(id);
-    } else if (method == "textDocument/hover") {
-      if constexpr (has_hover<Server>) {
+    case method_kind::TEXT_DOCUMENT_HOVER:
+      assert(has_hover<Server>);
+      if constexpr (has_hover<Server>)
         return response_message(
-            id, lscpp_handle_hover(
-                    server,
-                    get_params<protocol::TextDocumentPositionParams>(message)));
-      } else {
-        exit(1);
-      }
-    } else if (method == "textDocument/definition") {
-      if constexpr (has_definition<Server>) {
+            id,
+            lscpp_handle_hover(
+                server, get_params<method_kind::TEXT_DOCUMENT_HOVER>(message)));
+    case method_kind::TEXT_DOCUMENT_DEFINITION:
+      assert(has_definition<Server>);
+      if constexpr (has_definition<Server>)
         return response_message(
             id, lscpp_handle_definition(
-                    server,
-                    get_params<protocol::TextDocumentPositionParams>(message)));
-      } else {
-        exit(1);
-      }
-    } else if (method == "textDocument/completion") {
-      if constexpr (has_completion<Server>) {
+                    server, get_params<method_kind::TEXT_DOCUMENT_DEFINITION>(
+                                message)));
+    case method_kind::TEXT_DOCUMENT_COMPLETION:
+      assert(has_completion<Server>);
+      if constexpr (has_completion<Server>)
         return response_message(
             id, lscpp_handle_completion(
-                    server, get_params<protocol::CompletionParams>(message)));
-      } else {
-        exit(1);
-      }
-    } else if (method == "textDocument/didOpen") {
-      lscpp_handle_did_open(
-          server, get_params<protocol::DidOpenTextDocumentParams>(message));
+                    server, get_params<method_kind::TEXT_DOCUMENT_COMPLETION>(
+                                message)));
+    case method_kind::TEXT_DOCUMENT_DID_OPEN:
+      assert(has_text_document_sync<Server>);
+      if constexpr (has_text_document_sync<Server>)
+        lscpp_handle_did_open(
+            server, get_params<method_kind::TEXT_DOCUMENT_DID_OPEN>(message));
       return {};
-    } else if (method == "textDocument/didChange") {
-      lscpp_handle_did_change(
-          server, get_params<protocol::DidChangeTextDocumentParams>(message));
+    case method_kind::TEXT_DOCUMENT_DID_CHANGE:
+      assert(has_text_document_sync<Server>);
+      if constexpr (has_text_document_sync<Server>)
+        lscpp_handle_did_change(
+            server, get_params<method_kind::TEXT_DOCUMENT_DID_CHANGE>(message));
       return {};
-    } else if (method == "textDocument/didClose") {
-      lscpp_handle_did_close(
-          server, get_params<protocol::DidCloseTextDocumentParams>(message));
+    case method_kind::TEXT_DOCUMENT_DID_CLOSE:
+      if constexpr (has_text_document_sync<Server>)
+        lscpp_handle_did_close(
+            server, get_params<method_kind::TEXT_DOCUMENT_DID_CLOSE>(message));
       return {};
-    } else if (method == "textDocument/didSave") {
+    case method_kind::TEXT_DOCUMENT_DID_SAVE:
+      // TODO add constexpr protection
       lscpp_handle_did_save(
-          server, get_params<protocol::DidSaveTextDocumentParams>(message));
+          server, get_params<method_kind::TEXT_DOCUMENT_DID_SAVE>(message));
       return {};
+    case method_kind::INITIALIZE:
+    case method_kind::INITIALIZED:
+    case method_kind::EXIT:
+      exit(1);
     }
     exit(1);
   }
@@ -250,11 +257,6 @@ void launch(Server &&server, transporter &&transporter_) {
   // Allows to attach a debugger,
   // before the language server starts to communicate with the client.
   //   std::this_thread::sleep_for(std::chrono::seconds(config.startup_delay));
-
-  // If we want to play with different message handlers, we can revert to a
-  // templated launch (or duplicate the launch as long as it is simple)
-  //   lsp_message_handler message_handler{};
-  //   auto &message_handler = lscpp_get_message_handler(server);
 
   // setup logger
   // loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
