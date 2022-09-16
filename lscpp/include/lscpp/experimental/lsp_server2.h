@@ -34,6 +34,8 @@ struct lscpp_message_handler {
 not_implemented lscpp_get_message_handler(...);
 
 not_implemented lscpp_handle_initialize(...);
+not_implemented lscpp_handle_exit(...);
+
 not_implemented lscpp_handle_hover(...);
 not_implemented lscpp_handle_definition(...);
 not_implemented lscpp_handle_completion(...);
@@ -41,6 +43,11 @@ not_implemented lscpp_handle_completion(...);
 not_implemented lscpp_handle_did_open(...);
 not_implemented lscpp_handle_did_change(...);
 not_implemented lscpp_handle_did_close(...);
+
+template <class Server>
+constexpr bool has_exit =
+    !std::is_same_v<decltype(lscpp_handle_exit(std::declval<Server &>())),
+                    not_implemented>;
 
 template <class Server>
 constexpr bool has_hover =
@@ -111,7 +118,7 @@ protocol::InitializeResult lscpp_handle_initialize_default(
   capabilites.definitionProvider = has_definition<Server>;
   protocol::TextDocumentSyncOptions sync;
   sync.openClose = has_text_document_sync<Server>;
-  sync.change = protocol::TextDocumentSyncKind::Full;
+  sync.change = protocol::TextDocumentSyncKind::Full; // TODO customizable
   capabilites.textDocumentSync = sync;
   protocol::InitializeResult result{capabilites};
   return result;
@@ -143,25 +150,24 @@ handle_initialize(Server &server,
   return lscpp_handle_initialize(server, init_params);
 }
 
-template <method_kind Kind> auto get_params(message const &m) {
-  return std::any_cast<to_params_t<Kind>>(m.params);
+template <method_kind Kind> auto get_params(std::any params) {
+  return std::any_cast<to_params_t<Kind>>(params);
 }
 
 template <class Server>
 std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
                                                 Server &server,
                                                 std::string const &request) {
-  auto message = parse_request(request);
-  auto method = message.method;
-  auto id = message.id;
+  auto [method, id, params] = parse_request(request);
 
+  // startup/shutdown phase
   if (!hndlr.initialized_) {
     if (method != method_kind::INITIALIZE) {
       //   LOG_F(INFO, "Expected initialize request");
       exit(1);
     } else {
       auto init_result = handle_initialize(
-          server, get_params<method_kind::INITIALIZE>(message));
+          server, get_params<method_kind::INITIALIZE>(params));
       hndlr.initialized_ = true;
       return response_message(id, init_result);
     }
@@ -175,66 +181,69 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
     }
   } else if (hndlr.shutdown_) {
     if (method == method_kind::EXIT) {
-      exit(0); // TODO give the user the chance to do something
+      if constexpr (has_exit<Server>)
+        lscpp_handle_exit();
+      exit(0);
     } else {
       // TODO: send invalid request
       exit(1);
     }
-  } else {
-    switch (method) {
-    case method_kind::SHUTDOWN:
-      hndlr.shutdown_ = true;
-      return response_message(id);
-    case method_kind::TEXT_DOCUMENT_HOVER:
-      assert(has_hover<Server>);
-      if constexpr (has_hover<Server>)
-        return response_message(
-            id,
-            lscpp_handle_hover(
-                server, get_params<method_kind::TEXT_DOCUMENT_HOVER>(message)));
-    case method_kind::TEXT_DOCUMENT_DEFINITION:
-      assert(has_definition<Server>);
-      if constexpr (has_definition<Server>)
-        return response_message(
-            id, lscpp_handle_definition(
-                    server, get_params<method_kind::TEXT_DOCUMENT_DEFINITION>(
-                                message)));
-    case method_kind::TEXT_DOCUMENT_COMPLETION:
-      assert(has_completion<Server>);
-      if constexpr (has_completion<Server>)
-        return response_message(
-            id, lscpp_handle_completion(
-                    server, get_params<method_kind::TEXT_DOCUMENT_COMPLETION>(
-                                message)));
-    case method_kind::TEXT_DOCUMENT_DID_OPEN:
-      assert(has_text_document_sync<Server>);
-      if constexpr (has_text_document_sync<Server>)
-        lscpp_handle_did_open(
-            server, get_params<method_kind::TEXT_DOCUMENT_DID_OPEN>(message));
-      return {};
-    case method_kind::TEXT_DOCUMENT_DID_CHANGE:
-      assert(has_text_document_sync<Server>);
-      if constexpr (has_text_document_sync<Server>)
-        lscpp_handle_did_change(
-            server, get_params<method_kind::TEXT_DOCUMENT_DID_CHANGE>(message));
-      return {};
-    case method_kind::TEXT_DOCUMENT_DID_CLOSE:
-      if constexpr (has_text_document_sync<Server>)
-        lscpp_handle_did_close(
-            server, get_params<method_kind::TEXT_DOCUMENT_DID_CLOSE>(message));
-      return {};
-    case method_kind::TEXT_DOCUMENT_DID_SAVE:
-      // TODO add constexpr protection
-      lscpp_handle_did_save(
-          server, get_params<method_kind::TEXT_DOCUMENT_DID_SAVE>(message));
-      return {};
-    case method_kind::INITIALIZE:
-    case method_kind::INITIALIZED:
-    case method_kind::EXIT:
-      exit(1);
-    }
+  }
+
+  // server is ready and initialized
+  switch (method) {
+  case method_kind::SHUTDOWN:
+    hndlr.shutdown_ = true;
+    return response_message(id);
+  case method_kind::TEXT_DOCUMENT_HOVER:
+    assert(has_hover<Server>);
+    if constexpr (has_hover<Server>)
+      return response_message(
+          id,
+          lscpp_handle_hover(
+              server, get_params<method_kind::TEXT_DOCUMENT_HOVER>(params)));
+  case method_kind::TEXT_DOCUMENT_DEFINITION:
+    assert(has_definition<Server>);
+    if constexpr (has_definition<Server>)
+      return response_message(
+          id, lscpp_handle_definition(
+                  server,
+                  get_params<method_kind::TEXT_DOCUMENT_DEFINITION>(params)));
+  case method_kind::TEXT_DOCUMENT_COMPLETION:
+    assert(has_completion<Server>);
+    if constexpr (has_completion<Server>)
+      return response_message(
+          id, lscpp_handle_completion(
+                  server,
+                  get_params<method_kind::TEXT_DOCUMENT_COMPLETION>(params)));
+  case method_kind::TEXT_DOCUMENT_DID_OPEN:
+    assert(has_text_document_sync<Server>);
+    if constexpr (has_text_document_sync<Server>)
+      lscpp_handle_did_open(
+          server, get_params<method_kind::TEXT_DOCUMENT_DID_OPEN>(params));
+    return {};
+  case method_kind::TEXT_DOCUMENT_DID_CHANGE:
+    assert(has_text_document_sync<Server>);
+    if constexpr (has_text_document_sync<Server>)
+      lscpp_handle_did_change(
+          server, get_params<method_kind::TEXT_DOCUMENT_DID_CHANGE>(params));
+    return {};
+  case method_kind::TEXT_DOCUMENT_DID_CLOSE:
+    if constexpr (has_text_document_sync<Server>)
+      lscpp_handle_did_close(
+          server, get_params<method_kind::TEXT_DOCUMENT_DID_CLOSE>(params));
+    return {};
+  case method_kind::TEXT_DOCUMENT_DID_SAVE:
+    // TODO add constexpr protection
+    lscpp_handle_did_save(
+        server, get_params<method_kind::TEXT_DOCUMENT_DID_SAVE>(params));
+    return {};
+  case method_kind::INITIALIZE:
+  case method_kind::INITIALIZED:
+  case method_kind::EXIT:
     exit(1);
   }
+  exit(1);
 }
 
 template <class Server>
