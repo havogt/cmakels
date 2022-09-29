@@ -4,7 +4,7 @@ import {
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
-} from 'vscode-languageclient';
+} from 'vscode-languageclient/node';
 
 /**
  * Method to get workspace configuration option

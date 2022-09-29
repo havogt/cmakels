@@ -1,76 +1,72 @@
 {
-	"name": "cmakels-client",
-	"displayName": "cmakels client",
-	"description": "A VSCode client for cmakels",
-	"version": "0.0.3",
-	"publisher": "havogt",
-	"engines": {
-		"vscode": "^1.31.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onLanguage:cmake"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"configuration": {
-			"type": "object",
-			"title": "cmakels",
-			"properties": {
-				"cmakels.path": {
-					"type": "string",
-					"default": "cmakels",
-					"description": "The path to the cmakels executable, e.g.: /usr/bin/cmakels"
-				},
-				"cmakels.maxNumberOfProblems": {
-					"scope": "resource",
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
-				},
-				"cmakels.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VS Code and the language server."
-				},
-				"cmakels.buildDirectory": {
-					"type": "string",
-					"default": "build",
-					"description": "Location of CMakeCache.txt as configured by the user (or as used by the cmake-tools extension) relative to workspaceRoot."
-				}
-			}
-		},
-		"commands": [
-			{
-				"command": "cmakels.restart",
-				"title": "cmakels: Restart Language Server",
-				"description": "Restart the running instance of the language server"
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"postinstall": "node ./node_modules/vscode/bin/install",
-		"test": "npm run compile && node ./node_modules/vscode/bin/test"
-	},
-	"dependencies": {
-		"vscode-languageclient": "^4.1.4"
-	},
-	"devDependencies": {
-		"typescript": "^3.3.1",
-		"vscode": "^1.1.28",
-		"tslint": "^5.12.1",
-		"@types/node": "^10.12.21",
-		"@types/mocha": "^2.2.42"
-	}
+  "name": "cmakels-client",
+  "displayName": "cmakels client",
+  "description": "A VSCode client for cmakels",
+  "version": "0.0.3",
+  "publisher": "havogt",
+  "engines": {
+    "vscode": "^1.63.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:cmake"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "cmakels",
+      "properties": {
+        "cmakels.path": {
+          "type": "string",
+          "default": "cmakels",
+          "description": "The path to the cmakels executable, e.g.: /usr/bin/cmakels"
+        },
+        "cmakels.maxNumberOfProblems": {
+          "scope": "resource",
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        },
+        "cmakels.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        },
+        "cmakels.buildDirectory": {
+          "type": "string",
+          "default": "build",
+          "description": "Location of CMakeCache.txt as configured by the user (or as used by the cmake-tools extension) relative to workspaceRoot."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "cmakels.restart",
+        "title": "cmakels: Restart Language Server",
+        "description": "Restart the running instance of the language server"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7",
+    "@types/vscode": "^1.63.0",
+    "@vscode/test-electron": "^2.1.2"
+  }
 }
