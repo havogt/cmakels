@@ -7,7 +7,7 @@
 #include <loguru.hpp>
 
 #include "lscpp/transporter.h"
-#include "lsp_header.h"
+#include <lscpp/lsp_header.h>
 
 namespace lscpp {
 

@@ -11,8 +11,8 @@
 #include <thread>
 
 #include "../external/loguru/loguru.hpp"
-#include "lsp_header.h"
 #include "lsp_message_handler.h"
+#include <lscpp/lsp_header.h>
 
 namespace lscpp {
 
