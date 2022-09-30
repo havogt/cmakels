@@ -3,25 +3,21 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-// #include <loguru.hpp>
 
-// #include <lscpp/lsp_launcher.h>
-// #include <lscpp/lsp_server.h>
+#include <lscpp/protocol/CompletionItem.h>
+#include <lscpp/protocol/CompletionParams.h>
+#include <lscpp/protocol/DidCloseTextDocumentParams.h>
+#include <lscpp/protocol/DidOpenTextDocumentParams.h>
+#include <lscpp/protocol/DidSaveTextDocumentParams.h>
+#include <lscpp/protocol/Hover.h>
+#include <lscpp/protocol/InitializeParams.h>
+#include <lscpp/protocol/Location.h>
+#include <lscpp/protocol/Position.h>
+#include <lscpp/protocol/Range.h>
+#include <lscpp/protocol/TextDocumentPositionParams.h>
+#include <lscpp/stdio_transporter.h>
 
-#include <lscpp/experimental/lsp_server2.h>
-
-#include "lscpp/protocol/CompletionItem.h"
-#include "lscpp/protocol/CompletionParams.h"
-#include "lscpp/protocol/DidCloseTextDocumentParams.h"
-#include "lscpp/protocol/DidOpenTextDocumentParams.h"
-#include "lscpp/protocol/DidSaveTextDocumentParams.h"
-#include "lscpp/protocol/Hover.h"
-#include "lscpp/protocol/InitializeParams.h"
-#include "lscpp/protocol/Location.h"
-#include "lscpp/protocol/Position.h"
-#include "lscpp/protocol/Range.h"
-#include "lscpp/protocol/TextDocumentPositionParams.h"
-#include "lscpp/stdio_transporter.h"
+#include <lscpp/experimental/adl_lsp_server.h>
 
 namespace my_lsp_server {
 struct server : lscpp::experimental::server_with_default_handler {
@@ -60,8 +56,4 @@ struct server : lscpp::experimental::server_with_default_handler {
 int main(int argc, char *argv[]) {
   lscpp::experimental::launch(my_lsp_server::server{},
                               lscpp::stdio_transporter{false});
-  // lscpp::launch(
-  //     lscpp::my_lsp_server{},
-  //     lscpp::launch_config{0, {lscpp::Verbosity_MAX, "sample_server.log"}},
-  //     lscpp::stdio_transporter{false});
 }

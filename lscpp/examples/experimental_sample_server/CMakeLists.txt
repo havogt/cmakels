@@ -1,6 +1,4 @@
 add_executable(experimental_sample_server sample_server.cpp)
 target_compile_options(experimental_sample_server PRIVATE -Wall)
-target_link_libraries(experimental_sample_server PRIVATE Threads::Threads)
-target_link_libraries(experimental_sample_server PRIVATE loguru)
-target_link_libraries(experimental_sample_server PRIVATE lscpp)
+target_link_libraries(experimental_sample_server PRIVATE lscpp_adl)
 install(TARGETS experimental_sample_server DESTINATION bin)

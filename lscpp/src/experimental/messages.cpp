@@ -1,10 +1,16 @@
+/*
+ * Copyright 2019-2022 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include "lscpp/experimental/messages.h"
+
 #include <cstddef>
 #include <sstream>
 
 #include "../external/json.hpp"
 #include "../protocol_serializer/serializer.h"
-
-#include "lscpp/experimental/messages.h"
 
 namespace lscpp::experimental {
 namespace {
@@ -81,7 +87,6 @@ auto as_notification_message(nlohmann::json const &j) {
 struct no_params {};
 
 template <method_kind Kind> struct to_param;
-//  { using type = void; };
 template <> struct to_param<method_kind::INITIALIZE> {
   using type = protocol::InitializeParams;
 };

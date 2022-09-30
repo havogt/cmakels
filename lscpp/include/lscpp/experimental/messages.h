@@ -1,3 +1,8 @@
+/*
+ * Copyright 2019-2022 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #pragma once
 
 #include <any>
@@ -32,7 +37,6 @@ enum class method_kind {
 };
 
 template <method_kind Kind> struct to_param;
-//  { using type = void; };
 template <> struct to_param<method_kind::INITIALIZE> {
   using type = protocol::InitializeParams;
 };

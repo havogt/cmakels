@@ -1,4 +1,18 @@
+/*
+ * Copyright 2019-2022 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #pragma once
+
+#include <cassert>
+#include <chrono>
+#include <functional>
+#include <future>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <thread>
 
 #include "lscpp/lsp_header.h"
 #include "lscpp/protocol/CompletionParams.h"
@@ -12,14 +26,6 @@
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/transporter.h"
 #include "messages.h"
-#include <cassert>
-#include <chrono>
-#include <functional>
-#include <future>
-#include <optional>
-#include <sstream>
-#include <string>
-#include <thread>
 
 namespace lscpp::experimental {
 
@@ -163,7 +169,6 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
   // startup/shutdown phase
   if (!hndlr.initialized_) {
     if (method != method_kind::INITIALIZE) {
-      //   LOG_F(INFO, "Expected initialize request");
       exit(1);
     } else {
       auto init_result = handle_initialize(
@@ -173,7 +178,6 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
     }
   } else if (!hndlr.ready_) {
     if (method != method_kind::INITIALIZED) {
-      //   LOG_F(INFO, "Expected initialized request");
       exit(1);
     } else {
       hndlr.ready_ = true;
@@ -267,28 +271,18 @@ void launch(Server &&server, transporter &&transporter_) {
   // before the language server starts to communicate with the client.
   //   std::this_thread::sleep_for(std::chrono::seconds(config.startup_delay));
 
-  // setup logger
-  // loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
-  //   loguru::g_colorlogtostderr = false;
-  //   if (config.logger.filename.size() > 0)
-  //     loguru::add_file(config.logger.filename.c_str(), loguru::Truncate,
-  //                      config.logger.verbosity);
-
   auto rcv = std::async(std::launch::async, [&]() {
     while (true) {
       auto header = parse_header(transporter_);
-      //   LOG_F(INFO, "content-length: '%d'", header.content_length);
+
       if (header.content_length <
           0) { // TODO parse header should not use -1 to report an error
         continue;
       }
       auto msg = transporter_.read_message(header.content_length);
-      //   LOG_F(INFO, "msg: '%s'", msg.c_str());
 
-      //   auto result = message_handler.handle_message(server, msg);
       auto result = lscpp_handle_message(server, msg);
       if (result) {
-        // LOG_F(INFO, "Sending response: '%s'", (*result).c_str());
         write_lsp_message(transporter_, *result);
       }
     }
