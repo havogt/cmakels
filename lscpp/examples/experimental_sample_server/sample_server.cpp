@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <lscpp/experimental/messages.h>
 #include <lscpp/protocol/CompletionItem.h>
 #include <lscpp/protocol/CompletionParams.h>
 #include <lscpp/protocol/DidCloseTextDocumentParams.h>
@@ -39,11 +40,15 @@ struct server : lscpp::experimental::server_with_default_handler {
     return {lscpp::protocol::CompletionItem{"foo"},
             lscpp::protocol::CompletionItem{"bar"}};
   }
-  friend void
-  lscpp_handle_did_open(server &, lscpp::protocol::DidOpenTextDocumentParams) {}
-  friend void
+  friend auto
+  lscpp_handle_did_open(server &, lscpp::protocol::DidOpenTextDocumentParams) {
+    return lscpp::experimental::make_notification_message("opened");
+  }
+  friend auto
   lscpp_handle_did_change(server &,
-                          lscpp::protocol::DidChangeTextDocumentParams) {}
+                          lscpp::protocol::DidChangeTextDocumentParams) {
+    return lscpp::experimental::make_notification_message("changed");
+  }
   friend void
   lscpp_handle_did_close(server &,
                          lscpp::protocol::DidCloseTextDocumentParams) {}
