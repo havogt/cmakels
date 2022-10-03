@@ -222,15 +222,42 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
                   get_params<method_kind::TEXT_DOCUMENT_COMPLETION>(params)));
   case method_kind::TEXT_DOCUMENT_DID_OPEN:
     assert(has_text_document_sync<Server>);
-    if constexpr (has_text_document_sync<Server>)
-      lscpp_handle_did_open(
-          server, get_params<method_kind::TEXT_DOCUMENT_DID_OPEN>(params));
-    return {};
+    if constexpr (has_text_document_sync<Server>) {
+      // TODO cleanup dispatching on return type
+      // allows to send notifications from the server to the client in a
+      // synchronous implementation (e.g. PublishDiagnostics)
+      // TODO needs type-checking, currently we blindly forward a json string
+      if constexpr (!std::is_same_v<
+                        decltype(lscpp_handle_did_open(
+                            std::declval<Server>(),
+                            std::declval<
+                                protocol::DidOpenTextDocumentParams>())),
+                        void>) {
+        return lscpp_handle_did_open(
+            server, get_params<method_kind::TEXT_DOCUMENT_DID_OPEN>(params));
+      } else {
+        lscpp_handle_did_open(
+            server, get_params<method_kind::TEXT_DOCUMENT_DID_OPEN>(params));
+      }
+      return {};
+    }
   case method_kind::TEXT_DOCUMENT_DID_CHANGE:
     assert(has_text_document_sync<Server>);
-    if constexpr (has_text_document_sync<Server>)
-      lscpp_handle_did_change(
-          server, get_params<method_kind::TEXT_DOCUMENT_DID_CHANGE>(params));
+    if constexpr (has_text_document_sync<Server>) {
+      // TODO see TEXT_DOCUMENT_DID_OPEN
+      if constexpr (!std::is_same_v<
+                        decltype(lscpp_handle_did_change(
+                            std::declval<Server>(),
+                            std::declval<
+                                protocol::DidChangeTextDocumentParams>())),
+                        void>) {
+        return lscpp_handle_did_change(
+            server, get_params<method_kind::TEXT_DOCUMENT_DID_CHANGE>(params));
+      } else {
+        lscpp_handle_did_change(
+            server, get_params<method_kind::TEXT_DOCUMENT_DID_CHANGE>(params));
+      }
+    }
     return {};
   case method_kind::TEXT_DOCUMENT_DID_CLOSE:
     if constexpr (has_text_document_sync<Server>)
