@@ -20,9 +20,12 @@
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/DidSaveTextDocumentParams.h"
+#include "lscpp/protocol/DocumentDiagnosticParams.h"
+#include "lscpp/protocol/DocumentDiagnosticReport.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/InitializeResult.h"
 #include "lscpp/protocol/Location.h"
+#include "lscpp/protocol/ServerCapabilities.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
 #include "lscpp/transporter.h"
 #include "messages.h"
@@ -45,6 +48,7 @@ not_implemented lscpp_handle_exit(...);
 not_implemented lscpp_handle_hover(...);
 not_implemented lscpp_handle_definition(...);
 not_implemented lscpp_handle_completion(...);
+not_implemented lscpp_handle_diagnostic_report(...);
 
 not_implemented lscpp_handle_did_open(...);
 not_implemented lscpp_handle_did_change(...);
@@ -68,11 +72,19 @@ constexpr bool has_definition =
                         std::declval<Server &>(),
                         std::declval<protocol::TextDocumentPositionParams>())),
                     not_implemented>;
+
 template <class Server>
 constexpr bool has_completion =
     !std::is_same_v<decltype(lscpp_handle_completion(
                         std::declval<Server &>(),
                         std::declval<protocol::CompletionParams>())),
+                    not_implemented>;
+
+template <class Server>
+constexpr bool has_diagnostic_report =
+    !std::is_same_v<decltype(lscpp_handle_diagnostic_report(
+                        std::declval<Server &>(),
+                        std::declval<protocol::DocumentDiagnosticParams>())),
                     not_implemented>;
 
 template <class Server>
@@ -119,9 +131,14 @@ protocol::InitializeResult lscpp_handle_initialize_default(
   protocol::ServerCapabilities capabilites;
   capabilites.hoverProvider = has_hover<Server>;
   if (has_completion<Server>) {
-    capabilites.completionProvider = protocol::CompletionOptions{};
+    capabilites.completionProvider =
+        protocol::CompletionOptions{}; // TODO customizable
   }
   capabilites.definitionProvider = has_definition<Server>;
+  if (has_diagnostic_report<Server>) {
+    capabilites.diagnosticProvider =
+        protocol::DiagnosticOptions{}; // TODO customizable
+  }
   protocol::TextDocumentSyncOptions sync;
   sync.openClose = has_text_document_sync<Server>;
   sync.change = protocol::TextDocumentSyncKind::Full; // TODO customizable
@@ -220,6 +237,14 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
           id, lscpp_handle_completion(
                   server,
                   get_params<method_kind::TEXT_DOCUMENT_COMPLETION>(params)));
+  case method_kind::TEXT_DOCUMENT_DIAGNOSTIC:
+    assert(has_diagnostic_report<Server>);
+    if constexpr (has_diagnostic_report<Server>) {
+      return response_message(
+          id, lscpp_handle_diagnostic_report(
+                  server,
+                  get_params<method_kind::TEXT_DOCUMENT_DIAGNOSTIC>(params)));
+    }
   case method_kind::TEXT_DOCUMENT_DID_OPEN:
     assert(has_text_document_sync<Server>);
     if constexpr (has_text_document_sync<Server>) {

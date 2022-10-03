@@ -26,6 +26,7 @@ const std::map<std::string, method_kind> method_str_to_kind{
     {"textDocument/hover", method_kind::TEXT_DOCUMENT_HOVER},
     {"textDocument/definition", method_kind::TEXT_DOCUMENT_DEFINITION},
     {"textDocument/completion", method_kind::TEXT_DOCUMENT_COMPLETION},
+    {"textDocument/diagnostic", method_kind::TEXT_DOCUMENT_DIAGNOSTIC},
 };
 }
 
@@ -67,6 +68,9 @@ template std::string response_message(int id, const protocol::Hover &result);
 template std::string response_message(int id, const protocol::Location &result);
 template std::string
 response_message(int id, const std::vector<protocol::CompletionItem> &result);
+template std::string
+response_message(int id,
+                 const protocol::RelatedFullDocumentDiagnosticReport &result);
 
 namespace {
 template <class Params> auto as_request_message(nlohmann::json const &j) {
@@ -83,39 +87,6 @@ template <class Params> auto as_notification_message(nlohmann::json const &j) {
 auto as_notification_message(nlohmann::json const &j) {
   return message{method_str_to_kind.at(j["method"]), -1};
 }
-
-struct no_params {};
-
-template <method_kind Kind> struct to_param;
-template <> struct to_param<method_kind::INITIALIZE> {
-  using type = protocol::InitializeParams;
-};
-template <> struct to_param<method_kind::INITIALIZED> { using type = void; };
-template <> struct to_param<method_kind::EXIT> { using type = void; };
-template <> struct to_param<method_kind::SHUTDOWN> { using type = void; };
-template <> struct to_param<method_kind::TEXT_DOCUMENT_HOVER> {
-  using type = protocol::TextDocumentPositionParams;
-};
-template <> struct to_param<method_kind::TEXT_DOCUMENT_DEFINITION> {
-  using type = protocol::TextDocumentPositionParams;
-};
-template <> struct to_param<method_kind::TEXT_DOCUMENT_COMPLETION> {
-  using type = protocol::CompletionParams;
-};
-template <> struct to_param<method_kind::TEXT_DOCUMENT_DID_OPEN> {
-  using type = protocol::DidOpenTextDocumentParams;
-};
-template <> struct to_param<method_kind::TEXT_DOCUMENT_DID_CHANGE> {
-  using type = protocol::DidChangeTextDocumentParams;
-};
-template <> struct to_param<method_kind::TEXT_DOCUMENT_DID_CLOSE> {
-  using type = protocol::DidCloseTextDocumentParams;
-};
-template <> struct to_param<method_kind::TEXT_DOCUMENT_DID_SAVE> {
-  using type = protocol::DidSaveTextDocumentParams;
-};
-
-template <method_kind KIND> using to_params_t = typename to_param<KIND>::type;
 
 template <class Params> auto params_impl(nlohmann::json const &j) {
   return j["params"].get<Params>();
@@ -151,6 +122,8 @@ message parse_request(std::string request) {
     return as_message<method_kind::TEXT_DOCUMENT_DEFINITION>(j);
   } else if (method == method_kind::TEXT_DOCUMENT_COMPLETION) {
     return as_message<method_kind::TEXT_DOCUMENT_COMPLETION>(j);
+  } else if (method == method_kind::TEXT_DOCUMENT_DIAGNOSTIC) {
+    return as_message<method_kind::TEXT_DOCUMENT_DIAGNOSTIC>(j);
   } else if (method == method_kind::TEXT_DOCUMENT_DID_OPEN) {
     return as_message<method_kind::TEXT_DOCUMENT_DID_OPEN>(j);
   } else if (method == method_kind::TEXT_DOCUMENT_DID_CHANGE) {

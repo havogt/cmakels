@@ -89,6 +89,31 @@ struct CompletionOptions {
   std::vector<std::string> triggerCharacters;
 };
 
+struct WorkDoneProgressOptions {
+  bool workDoneProgress = false;
+};
+
+struct DiagnosticOptions : WorkDoneProgressOptions {
+  /**
+   * An optional identifier under which the diagnostics are
+   * managed by the client.
+   */
+  std::optional<std::string> identifier;
+
+  /**
+   * Whether the language has inter file dependencies meaning that
+   * editing code in one file can result in a different diagnostic
+   * set in another file. Inter file dependencies are common for
+   * most programming languages and typically uncommon for linters.
+   */
+  bool interFileDependencies = false;
+
+  /**
+   * The server provides support for workspace diagnostics as well.
+   */
+  bool workspaceDiagnostics = false;
+};
+
 struct ServerCapabilities {
   /**
    * Defines how text documents are synced. Is either a detailed structure
@@ -112,6 +137,14 @@ struct ServerCapabilities {
    * The server provides completion support.
    */
   std::optional<CompletionOptions> completionProvider;
+
+  /**
+   * The server has support for pull model diagnostics.
+   *
+   * @since 3.17.0
+   */
+  std::optional<DiagnosticOptions>
+      diagnosticProvider; // TODO or DiagnosticRegistrationOptions;
 };
 
 } // namespace protocol

@@ -16,6 +16,7 @@
 #include "lscpp/protocol/DidCloseTextDocumentParams.h"
 #include "lscpp/protocol/DidOpenTextDocumentParams.h"
 #include "lscpp/protocol/DidSaveTextDocumentParams.h"
+#include "lscpp/protocol/DocumentDiagnosticParams.h"
 #include "lscpp/protocol/InitializeParams.h"
 #include "lscpp/protocol/InitializeResult.h"
 #include "lscpp/protocol/TextDocumentPositionParams.h"
@@ -34,6 +35,7 @@ enum class method_kind {
   TEXT_DOCUMENT_HOVER,
   TEXT_DOCUMENT_DEFINITION,
   TEXT_DOCUMENT_COMPLETION,
+  TEXT_DOCUMENT_DIAGNOSTIC,
 };
 
 template <method_kind Kind> struct to_param;
@@ -51,6 +53,9 @@ template <> struct to_param<method_kind::TEXT_DOCUMENT_DEFINITION> {
 };
 template <> struct to_param<method_kind::TEXT_DOCUMENT_COMPLETION> {
   using type = protocol::CompletionParams;
+};
+template <> struct to_param<method_kind::TEXT_DOCUMENT_DIAGNOSTIC> {
+  using type = protocol::DocumentDiagnosticParams;
 };
 template <> struct to_param<method_kind::TEXT_DOCUMENT_DID_OPEN> {
   using type = protocol::DidOpenTextDocumentParams;
