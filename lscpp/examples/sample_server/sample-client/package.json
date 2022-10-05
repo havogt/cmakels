@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "publisher": "havogt",
   "engines": {
-    "vscode": "^1.63.0"
+    "vscode": "^1.70.0"
   },
   "categories": [
     "Other"
@@ -50,11 +50,11 @@
     "watch": "tsc -watch -p ./"
   },
   "dependencies": {
-    "vscode-languageclient": "^7.0.0"
+    "vscode-languageclient": "^8.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.7",
-    "@types/vscode": "^1.63.0",
+    "@types/vscode": "^1.70.0",
     "@vscode/test-electron": "^2.1.2"
   }
 }

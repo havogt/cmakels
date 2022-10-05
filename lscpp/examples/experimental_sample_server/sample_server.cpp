@@ -7,9 +7,12 @@
 #include <lscpp/experimental/messages.h>
 #include <lscpp/protocol/CompletionItem.h>
 #include <lscpp/protocol/CompletionParams.h>
+#include <lscpp/protocol/Diagnostic.h>
 #include <lscpp/protocol/DidCloseTextDocumentParams.h>
 #include <lscpp/protocol/DidOpenTextDocumentParams.h>
 #include <lscpp/protocol/DidSaveTextDocumentParams.h>
+#include <lscpp/protocol/DocumentDiagnosticParams.h>
+#include <lscpp/protocol/DocumentDiagnosticReport.h>
 #include <lscpp/protocol/Hover.h>
 #include <lscpp/protocol/InitializeParams.h>
 #include <lscpp/protocol/Location.h>
@@ -25,7 +28,7 @@ struct server : lscpp::experimental::server_with_default_handler {
 
   friend lscpp::protocol::Hover
   lscpp_handle_hover(server &, lscpp::protocol::TextDocumentPositionParams) {
-    return {"bla"};
+    return {"bla", lscpp::protocol::Range{{1, 1}, {1, 5}}};
   }
   friend lscpp::protocol::Location
   lscpp_handle_definition(server &,
@@ -39,6 +42,17 @@ struct server : lscpp::experimental::server_with_default_handler {
   lscpp_handle_completion(server &, lscpp::protocol::CompletionParams) {
     return {lscpp::protocol::CompletionItem{"foo"},
             lscpp::protocol::CompletionItem{"bar"}};
+  }
+  friend lscpp::protocol::RelatedFullDocumentDiagnosticReport
+  lscpp_handle_diagnostic_report(server &,
+                                 lscpp::protocol::DocumentDiagnosticParams) {
+    return {
+        "foo",
+        {lscpp::protocol::Diagnostic{lscpp::protocol::Range{{2, 1}, {2, 5}},
+                                     lscpp::protocol::DiagnosticSeverity::Error,
+                                     {},
+                                     {},
+                                     "Oh that's stupid!"}}};
   }
   friend auto
   lscpp_handle_did_open(server &, lscpp::protocol::DidOpenTextDocumentParams) {
