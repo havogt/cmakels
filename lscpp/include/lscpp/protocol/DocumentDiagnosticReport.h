@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "lscpp/protocol/Diagnostic.h"
+#include "Diagnostic.h"
 #include <optional>
 #include <string>
 #include <unordered_map>

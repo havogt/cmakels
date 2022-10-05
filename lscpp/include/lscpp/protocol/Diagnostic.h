@@ -5,7 +5,7 @@
  */
 #pragma once
 
-#include "lscpp/protocol/Range.h"
+#include "Range.h"
 #include <optional>
 #include <string>
 #include <variant>

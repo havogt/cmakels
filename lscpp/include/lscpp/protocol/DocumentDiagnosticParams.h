@@ -5,9 +5,9 @@
  */
 #pragma once
 
-#include "lscpp/protocol/PartialResultParams.h"
-#include "lscpp/protocol/TextDocumentIdentifier.h"
-#include "lscpp/protocol/WorkDoneProgressParams.h"
+#include "PartialResultParams.h"
+#include "TextDocumentIdentifier.h"
+#include "WorkDoneProgressParams.h"
 #include <optional>
 
 namespace lscpp {
