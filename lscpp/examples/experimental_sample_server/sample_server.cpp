@@ -46,13 +46,13 @@ struct server : lscpp::experimental::server_with_default_handler {
   friend lscpp::protocol::RelatedFullDocumentDiagnosticReport
   lscpp_handle_diagnostic_report(server &,
                                  lscpp::protocol::DocumentDiagnosticParams) {
-    return {
-        "foo",
-        {lscpp::protocol::Diagnostic{lscpp::protocol::Range{{2, 1}, {2, 5}},
-                                     lscpp::protocol::DiagnosticSeverity::Error,
-                                     {},
-                                     {},
-                                     "Oh that's stupid!"}}};
+    return {{"foo",
+             {lscpp::protocol::Diagnostic{
+                 lscpp::protocol::Range{{2, 1}, {2, 5}},
+                 lscpp::protocol::DiagnosticSeverity::Error,
+                 {},
+                 {},
+                 "Oh that's stupid!"}}}};
   }
   friend auto
   lscpp_handle_did_open(server &, lscpp::protocol::DidOpenTextDocumentParams) {

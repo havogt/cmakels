@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Diagnostic.h"
+#include <cassert>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -40,6 +41,8 @@ inline constexpr const char *to_string(DocumentDiagnosticReportKind kind) {
     return "full";
   case DocumentDiagnosticReportKind::Unchanged:
     return "unchanged";
+  default:
+    assert(false); /*unreachable*/
   }
 }
 

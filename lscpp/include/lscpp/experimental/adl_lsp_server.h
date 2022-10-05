@@ -53,6 +53,7 @@ not_implemented lscpp_handle_diagnostic_report(...);
 not_implemented lscpp_handle_did_open(...);
 not_implemented lscpp_handle_did_change(...);
 not_implemented lscpp_handle_did_close(...);
+not_implemented lscpp_handle_did_save(...);
 
 template <class Server>
 constexpr bool has_exit =
@@ -123,6 +124,13 @@ template <class Server> struct has_text_document_sync_impl {
 template <class Server>
 constexpr bool has_text_document_sync =
     has_text_document_sync_impl<Server>::value;
+
+template <class Server>
+constexpr bool has_did_save =
+    !std::is_same_v<decltype(lscpp_handle_did_save(
+                        std::declval<Server &>(),
+                        std::declval<protocol::DidSaveTextDocumentParams>())),
+                    not_implemented>;
 
 template <class Server>
 protocol::InitializeResult lscpp_handle_initialize_default(
@@ -252,12 +260,12 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
       // allows to send notifications from the server to the client in a
       // synchronous implementation (e.g. PublishDiagnostics)
       // TODO needs type-checking, currently we blindly forward a json string
-      if constexpr (!std::is_same_v<
-                        decltype(lscpp_handle_did_open(
+      if constexpr (std::is_same_v<
+                        std::decay_t<decltype(lscpp_handle_did_open(
                             std::declval<Server>(),
                             std::declval<
-                                protocol::DidOpenTextDocumentParams>())),
-                        void>) {
+                                protocol::DidOpenTextDocumentParams>()))>,
+                        std::string>) {
         return lscpp_handle_did_open(
             server, get_params<method_kind::TEXT_DOCUMENT_DID_OPEN>(params));
       } else {
@@ -270,12 +278,12 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
     assert(has_text_document_sync<Server>);
     if constexpr (has_text_document_sync<Server>) {
       // TODO see TEXT_DOCUMENT_DID_OPEN
-      if constexpr (!std::is_same_v<
-                        decltype(lscpp_handle_did_change(
+      if constexpr (std::is_same_v<
+                        std::decay_t<decltype(lscpp_handle_did_change(
                             std::declval<Server>(),
                             std::declval<
-                                protocol::DidChangeTextDocumentParams>())),
-                        void>) {
+                                protocol::DidChangeTextDocumentParams>()))>,
+                        std::string>) {
         return lscpp_handle_did_change(
             server, get_params<method_kind::TEXT_DOCUMENT_DID_CHANGE>(params));
       } else {
@@ -290,9 +298,11 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
           server, get_params<method_kind::TEXT_DOCUMENT_DID_CLOSE>(params));
     return {};
   case method_kind::TEXT_DOCUMENT_DID_SAVE:
-    // TODO add constexpr protection
-    lscpp_handle_did_save(
-        server, get_params<method_kind::TEXT_DOCUMENT_DID_SAVE>(params));
+    assert(has_did_save<Server>);
+    if constexpr (has_text_document_sync<Server>) {
+      lscpp_handle_did_save(
+          server, get_params<method_kind::TEXT_DOCUMENT_DID_SAVE>(params));
+    }
     return {};
   case method_kind::INITIALIZE:
   case method_kind::INITIALIZED:
