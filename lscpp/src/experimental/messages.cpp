@@ -73,20 +73,6 @@ response_message(int id,
                  const protocol::RelatedFullDocumentDiagnosticReport &result);
 
 namespace {
-template <class Params> auto as_request_message(nlohmann::json const &j) {
-  return message{method_str_to_kind.at(j["method"]), j["id"],
-                 j["params"].get<Params>()};
-}
-auto as_request_message(nlohmann::json const &j) {
-  return message{method_str_to_kind.at(j["method"]), j["id"]};
-}
-template <class Params> auto as_notification_message(nlohmann::json const &j) {
-  return message{method_str_to_kind.at(j["method"]), -1,
-                 j["params"].get<Params>()};
-}
-auto as_notification_message(nlohmann::json const &j) {
-  return message{method_str_to_kind.at(j["method"]), -1};
-}
 
 template <class Params> auto params_impl(nlohmann::json const &j) {
   return j["params"].get<Params>();
