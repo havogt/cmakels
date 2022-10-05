@@ -299,7 +299,7 @@ std::optional<std::string> lscpp_handle_message(lscpp_message_handler &hndlr,
     return {};
   case method_kind::TEXT_DOCUMENT_DID_SAVE:
     assert(has_did_save<Server>);
-    if constexpr (has_text_document_sync<Server>) {
+    if constexpr (has_did_save<Server>) {
       lscpp_handle_did_save(
           server, get_params<method_kind::TEXT_DOCUMENT_DID_SAVE>(params));
     }
