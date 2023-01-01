@@ -328,7 +328,8 @@ class server_with_default_handler {
   }
 };
 
-void read_message(transporter &transporter_, threadsafe_queue<std::string> &q) {
+inline void read_message(transporter &transporter_,
+                         threadsafe_queue<std::string> &q) {
   while (true) {
     auto header = parse_header(transporter_);
 
@@ -344,20 +345,24 @@ void read_message(transporter &transporter_, threadsafe_queue<std::string> &q) {
 template <class Server>
 void work(std::stop_token t, threadsafe_queue<std::string> &in_queue,
           threadsafe_queue<std::string> &out_queue, Server &server) {
-  auto msg = in_queue.wait_and_pop(t);
-  if (!msg)
-    return;
-  auto result = lscpp_handle_message(server, *msg);
-  if (result) {
-    out_queue.push(*result);
+  while (!t.stop_requested()) {
+    auto msg = in_queue.wait_and_pop(t);
+    if (!msg)
+      return;
+    auto result = lscpp_handle_message(server, *msg);
+    if (result) {
+      out_queue.push(*result);
+    }
   }
 }
 
-void write_message(std::stop_token t, transporter &transporter_,
-                   threadsafe_queue<std::string> &q) {
-  auto msg = q.wait_and_pop(t);
-  if (msg)
-    write_lsp_message(transporter_, *msg);
+inline void write_message(std::stop_token t, transporter &transporter_,
+                          threadsafe_queue<std::string> &q) {
+  while (!t.stop_requested()) {
+    auto msg = q.wait_and_pop(t);
+    if (msg)
+      write_lsp_message(transporter_, *msg);
+  }
 }
 
 template <class Server>
@@ -365,9 +370,10 @@ void launch(Server &&server, transporter &&transporter_) {
   threadsafe_queue<std::string> in_queue;
   threadsafe_queue<std::string> out_queue;
 
-  std::jthread(write_message, std::ref(transporter_), std::ref(out_queue));
-  std::jthread(work<Server>, std::ref(in_queue), std::ref(out_queue),
-               std::ref(server));
+  std::jthread writer(write_message, std::ref(transporter_),
+                      std::ref(out_queue));
+  std::jthread worker(work<Server>, std::ref(in_queue), std::ref(out_queue),
+                      std::ref(server));
   read_message(transporter_, in_queue);
 }
 
