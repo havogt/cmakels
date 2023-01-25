@@ -7,7 +7,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: seanmiddleditch/gha-setup-ninja@v1
       - name: configure
         run: |
           mkdir build
