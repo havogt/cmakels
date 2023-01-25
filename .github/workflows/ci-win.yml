@@ -7,14 +7,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: ilammy/msvc-dev-cmd@v1
       - name: configure
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake -G Ninja ..
       - name: build
         run: cmake --build build --parallel 2
       - name: test
         run: |
           cd build
-          ctest -C Debug --output-on-failure
+          ctest --output-on-failure
