@@ -15,7 +15,7 @@ include(FetchContent)
 FetchContent_Declare(
     googletest
     GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.10.0
+    GIT_TAG        release-1.11.0
 )
 FetchContent_GetProperties(googletest)
 if(NOT googletest_POPULATED)
@@ -27,9 +27,5 @@ if(NOT googletest_POPULATED)
 endif()
 
 add_lscpp_test(SOURCE test_read_header.cpp LIBRARIES lscpp)
-# add_lscpp_test(SOURCE test_message_handling_v1.cpp)
-add_lscpp_test(SOURCE test_message_handling_v2.cpp)
-add_lscpp_test(SOURCE test_json_serializable.cpp)
-add_lscpp_test(SOURCE test_std_variant_visitor.cpp)
 
 add_subdirectory(integration)

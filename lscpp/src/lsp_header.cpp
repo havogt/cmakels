@@ -1,8 +1,13 @@
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <cstring>
 #include <loguru.hpp>
 
-#include "lsp_header.h"
-#include "transporter.h"
+#include "lscpp/transporter.h"
+#include <lscpp/lsp_header.h>
 
 namespace lscpp {
 

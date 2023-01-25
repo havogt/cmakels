@@ -1,5 +1,10 @@
-#include "../src/lsp_header.h"
-#include "../src/transporter.h"
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+#include <lscpp/lsp_header.h>
+#include <lscpp/transporter.h>
 
 #include <gtest/gtest.h>
 
@@ -34,8 +39,7 @@ public:
     return res;
   }
 
-  void write_line(std::string) {}
-  void write_message(std::string) {}
+  void write_message(std::string, bool) {}
 };
 
 TEST(parse_header, simple) {

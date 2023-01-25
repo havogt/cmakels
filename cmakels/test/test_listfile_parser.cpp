@@ -1,10 +1,15 @@
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <gtest/gtest.h>
 
-#include <listfile_parser.hpp>
+#include <listfile_parser/listfile_parser.hpp>
 #include <map>
 #include <string>
 
-namespace cmake_query {
+namespace cmakels::parser {
 namespace {
 namespace test_helper {
 
@@ -130,4 +135,4 @@ TEST(parse_cmListFile, multiline_with_args_and_spaces) {
 // TODO add tests for multi-line quoted arguments
 
 } // namespace
-} // namespace cmake_query
+} // namespace cmakels::parser

@@ -1,8 +1,13 @@
+/*
+ * Copyright 2019-2020 Hannes Vogt
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 #include <gtest/gtest.h>
-#include <listfile_parser.hpp>
-#include <listfile_query.hpp>
+#include <listfile_parser/listfile_parser.hpp>
+#include <listfile_parser/listfile_query.hpp>
 
-namespace cmake_query {
+namespace cmakels::parser {
 namespace {
 
 TEST(listfile_query, get_function_name_from_first_char) {
@@ -90,4 +95,4 @@ PRIVATE  some_lib))?");
 // TODO test for multiline quoted args (once the parse supports it)
 
 } // namespace
-} // namespace cmake_query
+} // namespace cmakels::parser

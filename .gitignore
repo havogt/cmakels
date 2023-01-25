@@ -1,6 +1,9 @@
 install
-.vscode
+/.vscode
+/.theia
 *.log
 *.bak
+.clangd
+compile_commands.json
 build
-
+.cmakels

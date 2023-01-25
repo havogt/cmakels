@@ -1,16 +1,14 @@
-import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
+import { workspace, ExtensionContext, commands } from 'vscode';
 
 import {
 	LanguageClient,
 	LanguageClientOptions,
 	ServerOptions,
-	TransportKind
-} from 'vscode-languageclient';
+} from 'vscode-languageclient/node';
 
 /**
  * Method to get workspace configuration option
- * @param option name of the option (e.g. for clangd.path should be path)
+ * @param option name of the option (e.g. for cmakels.path should be path)
  * @param defaultValue default value to return if option is not set
  */
 function getConfig<T>(option: string, defaultValue?: any): T {
@@ -24,10 +22,9 @@ let client: LanguageClient;
 export function activate(context: ExtensionContext) {
 	let executablePath = getConfig<string>('path');
 
-	let rootpath = workspace.workspaceFolders ? workspace.workspaceFolders[0].uri.toString() : "undefined";
 	let serverOptions: ServerOptions = {
 		command: executablePath,
-		args: [rootpath, getConfig<string>("buildDirectory")]
+		args: [getConfig<string>("buildDirectory")]
 	};
 
 	// const filePattern: string = '**/*.{' +
@@ -54,7 +51,11 @@ export function activate(context: ExtensionContext) {
 		clientOptions
 	);
 
-	// Start the client. This will also launch the server
+	context.subscriptions.push(commands.registerCommand('cmakels.restart', async () => {
+		await client.stop();
+		client.start();
+	}));
+
 	client.start();
 }
 
