@@ -12,7 +12,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake -DCMAKE_CXX_COMPILER="C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe" -G Ninja ..
+          cmake -G Ninja ..
       - name: build
         run: cmake --build build --parallel 2
       - name: test
