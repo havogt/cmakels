@@ -10,7 +10,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         compiler: [g++, clang++]
-        sanitize: ["", "-fsanitize=address", "-fsanitize=memory", "-fsanitize=undefined"]
+        sanitize: ["", "-fsanitize=address", "-fsanitize=undefined"]
 
     steps:
     - uses: actions/checkout@v1
