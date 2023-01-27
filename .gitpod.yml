@@ -4,21 +4,16 @@ image:
 
 vscode:
   extensions:
-    - twxs.cmake@0.0.17:9s7m9CWOr6i6NZ7CNNF4kw==
-    - ms-vscode.cmake-tools@1.3.0-beta2:D4zHFORWBgqtZI9hwWYNvA==
-    - ms-vscode.cpptools@0.26.2:Pq/tmf2WN3SanVzB4xZc1g==
-    - havogt.cmakels-client@0.0.3:xTXH1VQyqquz2hjSx7fGWQ==
+    - twxs.cmake
+    - ms-vscode.cmake-tools
 
 tasks:
   - init: |
-      mkdir .theia && ln $(pwd)/.gitpod/.theia/settings.json .theia &&  ln $(pwd)/.gitpod/.theia/launch.json .theia
-      mkdir .vscode && ln $(pwd)/.gitpod/.vscode/cmake-kits.json .vscode
+      ln -s $(pwd)/.gitpod/.vscode $(pwd)
       mkdir build
       cmake -DCMAKE_INSTALL_PREFIX=/workspace/cmakels/install -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Debug -H/workspace/cmakels -B/workspace/cmakels/build "-GUnix Makefiles"
       ln -s /workspace/cmakels/build/compile_commands.json .
-    prebuild: |
       mkdir -p build/.clangd
-      cmake --build /workspace/cmakels/build/ --parallel $(nproc)
       clangd-indexer-10-rc1 --executor=all-TUs compile_commands.json > /workspace/cmakels/build/.clangd/clangd.dex
 
 github:
