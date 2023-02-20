@@ -134,7 +134,7 @@ constexpr bool has_did_save =
 
 template <class Server>
 protocol::InitializeResult lscpp_handle_initialize_default(
-    Server &server_, lscpp::protocol::InitializeParams const &init_params) {
+    Server &, lscpp::protocol::InitializeParams const &) {
 
   protocol::ServerCapabilities capabilites;
   capabilites.hoverProvider = has_hover<Server>;
